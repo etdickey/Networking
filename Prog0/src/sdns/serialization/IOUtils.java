@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.util.List;
 import java.util.Objects;
 
@@ -61,7 +62,6 @@ class IOUtils {
      * Reads an int (4 bytes) from an input stream
      * @param k the int to write
      * @return the int in Big Endian in a Byte array
-     * @throws IOException if premature EOF or other IO error
      */
     static Byte[] writeShortBigEndian(int k) {
         Byte[] buff = new Byte[2];
@@ -255,14 +255,38 @@ class IOUtils {
     static Inet4Address readIPv4(InputStream in) throws IOException {
         //Number of bytes in an encoded IPv4 address
         final int NUM_BYTES_IPV4 = 4;
-        byte[] buff = new byte[NUM_BYTES_IPV4];
+        byte[] buff = readIPHelper(in, NUM_BYTES_IPV4);
+        return (Inet4Address) Inet4Address.getByAddress(buff);
+    }
+
+    /**
+     * Reads an IPv6 (16 bytes) from an input stream
+     * @param in the input stream to read from
+     * @return the IPv6 address
+     * @throws IOException if premature EOF or other IO error
+     */
+    static Inet6Address readIPv6(InputStream in) throws IOException {
+        //Number of bytes in an encoded IPv6 address
+        final int NUM_BYTES_IPV6 = 16;
+        byte[] buff = readIPHelper(in, NUM_BYTES_IPV6);
+        return (Inet6Address) Inet6Address.getByAddress(buff);
+    }
+
+    /**
+     * Reads NUM_BYTES_IP in from buff
+     * @param in input stream to read from
+     * @param NUM_BYTES_IP number of bytes to read
+     * @throws IOException if EOF or other IO error
+     */
+    private static byte[] readIPHelper(InputStream in, int NUM_BYTES_IP) throws IOException {
+        byte[] buff = new byte[NUM_BYTES_IP];
         int i = 0, numRead = -1;
-        while(i < NUM_BYTES_IPV4 && (numRead = in.read(buff, i, 1)) != -1){
+        while(i < NUM_BYTES_IP && (numRead = in.read(buff, i, 1)) != -1){
             i += numRead;
         }
-        if(numRead == -1 && i < NUM_BYTES_IPV4){
+        if(numRead == -1 && i < NUM_BYTES_IP){
             throw new EOFException("ERROR: Premature EOF when reading IPv4 " + numRead);
         }
-        return (Inet4Address) Inet4Address.getByAddress(buff);
+        return buff;
     }
 }

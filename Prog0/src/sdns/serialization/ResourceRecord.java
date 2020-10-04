@@ -23,10 +23,11 @@ import static sdns.serialization.ValidationUtils.validateDomainName;
  * @version 1.0
  */
 public abstract class ResourceRecord {
-    //The type values for various subtypes (CName, NS, A)
+    //The type values for various subtypes (CName, NS, A, AAAA)
     protected static final long CN_TYPE_VALUE = 5L;
     protected static final long NS_TYPE_VALUE = 2L;
     protected static final long A_TYPE_VALUE = 1L;
+    protected static final long AAAA_TYPE_VALUE = 28L;
 
     //RR name and TimeToLive (TTL)
     private String name = null;
@@ -95,6 +96,7 @@ public abstract class ResourceRecord {
             case (short) CN_TYPE_VALUE: toReturn = new CName(name, in); break;
             case (short) NS_TYPE_VALUE: toReturn = new NS(name, in); break;
             case (short) A_TYPE_VALUE: toReturn = new A(name, in); break;
+            case (short) AAAA_TYPE_VALUE: toReturn = new AAAA(name, in); break;
             default: toReturn = new Unknown(name, type, in); break;
         }
 

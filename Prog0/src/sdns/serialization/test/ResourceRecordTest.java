@@ -12,9 +12,11 @@ import org.junit.jupiter.params.provider.ValueSource;
 import sdns.serialization.*;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -81,6 +83,30 @@ class ResourceRecordTest {
         b.add((byte)0);
     }
 
+    /**
+     * Concatenates two byte arrays
+     * @param a first arr
+     * @param b second arr
+     * @return concatenated byte arrays
+     */
+    private static byte[] concatByteArrs(byte[] a, byte[] b){
+        //ALTERNATIVE 1 (kept _intentionally_ for reference)
+//        byte[] buff = new byte[a.length + b.length];
+//        System.arraycopy(a, 0, buff, 0, a.length);
+//        System.arraycopy(b, 0, buff, a.length, b.length);
+//        return buff;
+
+        //ALTERNATIVE 2 (more elegant and extendable)
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+        try {
+            outputStream.write( a );
+            outputStream.write( b );
+        } catch (IOException e) {
+            fail();
+        }
+        return outputStream.toByteArray();
+    }
+
     //Test invalid input stream
     //  Too short in any field
     //  Too long in any field
@@ -106,8 +132,8 @@ class ResourceRecordTest {
                         0, 6,
                         5, -64, 111, 111, 102, 3};//"foo."
          */
-        @Test
-        @DisplayName("Bad length name long")
+        //Bad length name short
+        @Test @DisplayName("Bad length name long")
         void decodeValidationError1(){
             //foo. = 3 102, 111, 111, 192, 5 //-64 signed = 192 unsigned
             byte[] buff = { 3, 'f', 'o', 'o', 'o', -64, 5,
@@ -119,6 +145,8 @@ class ResourceRecordTest {
             ByteArrayInputStream b = new ByteArrayInputStream(buff);
             assertThrows(EOFException.class, () -> ResourceRecord.decode(b));
         }
+
+        //Bad length name short
         @Test
         @DisplayName("Bad length name short")
         void decodeValidationError2(){
@@ -133,6 +161,7 @@ class ResourceRecordTest {
             assertThrows(ValidationException.class, () -> ResourceRecord.decode(b));
         }
 
+        //Bad name incorrect ending
         @ParameterizedTest(name = "Bad name incorrect ending {0}")
         @ValueSource(bytes = {-128, 0, 1, -96, -84})
         void decodeValidationError(byte badEnding){
@@ -147,6 +176,7 @@ class ResourceRecordTest {
             assertThrows(ValidationException.class, () -> ResourceRecord.decode(b));
         }
 
+        //Bad name incorrect ending (EOF)
         @ParameterizedTest(name = "Bad name incorrect ending (EOF) {0}")
         @ValueSource(bytes = {96, 12})
         void decodeValidationErrorEOF(byte badEnding){
@@ -161,8 +191,8 @@ class ResourceRecordTest {
             assertThrows(EOFException.class, () -> ResourceRecord.decode(b));
         }
 
-        @Test
-        @DisplayName("Bad name incorrect ending 64")
+        //Bad name incorrect ending 64
+        @Test @DisplayName("Bad name incorrect ending 64")
         void decodeValidationErrorBadEnding(){
             //foo. = 3 102, 111, 111, 192, 5 //-64 signed = 192 unsigned
             byte[] buff = { 3, 'f', 'o', 'o', 64, 5,
@@ -175,8 +205,8 @@ class ResourceRecordTest {
             assertThrows(EOFException.class, () -> ResourceRecord.decode(b));
         }
 
-        @Test
-        @DisplayName("Bad 0x0001")
+        //Bad 0x0001 in various formats
+        @Test @DisplayName("Bad 0x0001")
         void decodeValidationError3(){
             //foo. = 3 102, 111, 111, 192, 5 //-64 signed = 192 unsigned
             byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
@@ -188,8 +218,7 @@ class ResourceRecordTest {
             ByteArrayInputStream b = new ByteArrayInputStream(buff);
             assertThrows(ValidationException.class, () -> ResourceRecord.decode(b));
         }
-        @Test
-        @DisplayName("Bad 0x0001")
+        @Test @DisplayName("Bad 0x0001")
         void decodeValidationError4(){
             //foo. = 3 102, 111, 111, 192, 5 //-64 signed = 192 unsigned
             byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
@@ -201,8 +230,7 @@ class ResourceRecordTest {
             ByteArrayInputStream b = new ByteArrayInputStream(buff);
             assertThrows(ValidationException.class, () -> ResourceRecord.decode(b));
         }
-        @Test
-        @DisplayName("Bad 0x0001")
+        @Test @DisplayName("Bad 0x0001")
         void decodeValidationError5(){
             //foo. = 3 102, 111, 111, 192, 5 //-64 signed = 192 unsigned
             byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
@@ -214,8 +242,7 @@ class ResourceRecordTest {
             ByteArrayInputStream b = new ByteArrayInputStream(buff);
             assertThrows(ValidationException.class, () -> ResourceRecord.decode(b));
         }
-        @Test
-        @DisplayName("Bad 0x0001")
+        @Test @DisplayName("Bad 0x0001")
         void decodeValidationError6(){
             //foo. = 3 102, 111, 111, 192, 5 //-64 signed = 192 unsigned
             byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
@@ -228,14 +255,14 @@ class ResourceRecordTest {
             assertThrows(ValidationException.class, () -> ResourceRecord.decode(b));
         }
 
-        @Test
-        @DisplayName("Null input stream")
+        //Null input stream
+        @Test @DisplayName("Null input stream")
         void decodeNullInput(){
             assertThrows(NullPointerException.class, () -> ResourceRecord.decode(null));
         }
 
-        @Test
-        @DisplayName("No RDLength")
+        //No RDLength
+        @Test @DisplayName("No RDLength")
         void decodeValidationErrorNoRDLength(){
             //foo. = 3 102, 111, 111, 192, 5 //-64 signed = 192 unsigned
             byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
@@ -247,8 +274,8 @@ class ResourceRecordTest {
             assertThrows(EOFException.class, () -> ResourceRecord.decode(b));
         }
 
-        @Test
-        @DisplayName("No Name")
+        //No Name
+        @Test @DisplayName("No Name")
         void decodeValidationErrorNoName(){
             //foo. = 3 102, 111, 111, 192, 5 //-64 signed = 192 unsigned
             byte[] buff = {
@@ -261,8 +288,8 @@ class ResourceRecordTest {
             assertThrows(ValidationException.class, () -> ResourceRecord.decode(b));
         }
 
-        @Test
-        @DisplayName("Half Name")
+        //Half Name
+        @Test @DisplayName("Half Name")
         void decodeValidationErrorHalfName(){
             //foo. = 3 102, 111, 111, 192, 5 //-64 signed = 192 unsigned
             byte[] buff = { 3, 'f', 'o',
@@ -275,8 +302,8 @@ class ResourceRecordTest {
             assertThrows(ValidationException.class, () -> ResourceRecord.decode(b));
         }
 
-        @Test
-        @DisplayName("No type")
+        //No type
+        @Test @DisplayName("No type")
         void decodeValidationErrorNoType(){
             //foo. = 3 102, 111, 111, 192, 5 //-64 signed = 192 unsigned
             byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
@@ -288,8 +315,8 @@ class ResourceRecordTest {
             assertThrows(ValidationException.class, () -> ResourceRecord.decode(b));
         }
 
-        @Test
-        @DisplayName("No 0x0001")
+        //No 0x0001
+        @Test @DisplayName("No 0x0001")
         void decodeValidationErrorNo0x0001(){
             //foo. = 3 102, 111, 111, 192, 5 //-64 signed = 192 unsigned
             byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
@@ -301,8 +328,8 @@ class ResourceRecordTest {
             assertThrows(ValidationException.class, () -> ResourceRecord.decode(b));
         }
 
-        @Test
-        @DisplayName("No TTL")
+        //No TTL
+        @Test @DisplayName("No TTL")
         void decodeValidationErrorNoTTL(){
             //foo. = 3 102, 111, 111, 192, 5 //-64 signed = 192 unsigned
             byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
@@ -314,8 +341,8 @@ class ResourceRecordTest {
             assertThrows(EOFException.class, () -> ResourceRecord.decode(b));
         }
 
-        @Test
-        @DisplayName("No RData")
+        //No RData
+        @Test @DisplayName("No RData")
         void decodeValidationErrorNoRData(){
             //foo. = 3 102, 111, 111, 192, 5 //-64 signed = 192 unsigned
             byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
@@ -332,16 +359,21 @@ class ResourceRecordTest {
      * Tests decode validation errors
      */
     @Nested
-    class DecodeValidationError { //These tests need to be rethought.  "asdf.." is a valid test _if serialized correctly_
+    class DecodeValidationError { //"asdf.." is a valid test _if serialized correctly_
         /*
-            //foo. = 3 102, 111, 111, 192, 5 //-64 signed = 192 unsigned
-        Valid data:
-        byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
-                            0, 2,
-                            0, 1, //0x0001
-                            0, 0, 0, 0,
-                            0, 6,
-                            3, 'f', 'o', 'o', -64, 5};//"foo."
+           foo. = 3 102, 111, 111, 192, 5 //-64 signed = 192 unsigned
+          Valid data:
+                3, 'f', 'o', 'o', -64, 5,
+                0, 2,
+                0, 1, //0x0001
+                0, 0, 0, 0,
+                0, 6,
+                3, 'f', 'o', 'o', -64, 5//"foo."
+         */
+
+        /**
+         * Tests invalid domain names in the name field
+         * @param name invalid name
          */
         @ParameterizedTest(name = "Invalid name = {0}")
         @ValueSource(strings = {"", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.⭐.⭕.",
@@ -372,6 +404,10 @@ class ResourceRecordTest {
             assertThrows(ValidationException.class, () -> ResourceRecord.decode(bstream));
         }
 
+        /**
+         * Tests for bad domain name with EOF exception
+         * @param name bad domain name
+         */
         @ParameterizedTest(name = "Invalid name (EOF) = {0}")
         @ValueSource(strings = {"asdf"})
         void decodeNameEOF(String name){
@@ -395,17 +431,9 @@ class ResourceRecordTest {
             assertThrows(EOFException.class, () -> ResourceRecord.decode(bstream));
         }
 
-
-
-        /*
-        //foo. = 3 102, 111, 111, 192, 5 //-64 signed = 192 unsigned
-        Valid data:
-        byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
-                            0, 2,
-                            0, 1, //0x0001
-                            0, 0, 0, 0,
-                            0, 6,
-                            3, 'f', 'o', 'o', -64, 5};//"foo."
+        /**
+         * Tests for invalid domain names in NS RData
+         * @param name invalid name to try
          */
         @ParameterizedTest(name = "Invalid rdata = {0}")
         @ValueSource(strings = {"", "asdf", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.⭐.⭕.",
@@ -447,6 +475,10 @@ class ResourceRecordTest {
             }
         }
 
+        /**
+         * Tests for invalid domain names in CName RData
+         * @param name invalid name to try
+         */
         @ParameterizedTest(name = "Invalid rdata = {0}")
         @ValueSource(strings = {"", "asdf", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.⭐.⭕.",
                 "-a.f", "-.", "-",
@@ -487,8 +519,8 @@ class ResourceRecordTest {
             }
         }
 
-        @Test
-        @DisplayName("Invalid IPv4 size 3")
+        //The next few tests test invalid IPv4 sizes in RDLength
+        @Test @DisplayName("Invalid IPv4 size 3")
         void decodeARDataInvalid0(){
             byte[] buff = { 0,
                     0, 1,
@@ -499,8 +531,7 @@ class ResourceRecordTest {
             ByteArrayInputStream b = new ByteArrayInputStream(buff);
             assertThrows(ValidationException.class, () -> ResourceRecord.decode(b));
         }
-        @Test
-        @DisplayName("Invalid IPv4 size 2")
+        @Test @DisplayName("Invalid IPv4 size 2")
         void decodeARDataInvalid1(){
             byte[] buff = { 0,
                     0, 1,
@@ -511,8 +542,7 @@ class ResourceRecordTest {
             ByteArrayInputStream b = new ByteArrayInputStream(buff);
             assertThrows(ValidationException.class, () -> ResourceRecord.decode(b));
         }
-        @Test
-        @DisplayName("Invalid IPv4 size 1")
+        @Test @DisplayName("Invalid IPv4 size 1")
         void decodeARDataInvalid2(){
             byte[] buff = { 0,
                     0, 1,
@@ -523,8 +553,7 @@ class ResourceRecordTest {
             ByteArrayInputStream b = new ByteArrayInputStream(buff);
             assertThrows(ValidationException.class, () -> ResourceRecord.decode(b));
         }
-        @Test
-        @DisplayName("Invalid IPv4 size 5")
+        @Test @DisplayName("Invalid IPv4 size 5")
         void decodeARDataInvalid3(){
             byte[] buff = { 0,
                     0, 1,
@@ -536,6 +565,45 @@ class ResourceRecordTest {
             assertThrows(ValidationException.class, () -> ResourceRecord.decode(b));
         }
 
+        //The next few tests test invalid IPv6 sizes in RDLength
+        @Test @DisplayName("Invalid IPv6 size 15")
+        void decodeAAAARDataInvalid0(){
+            byte[] buff = { 0,
+                    0, 28,
+                    0, 1,
+                    0, 0, 0, 0,
+                    0, 15,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+            ByteArrayInputStream b = new ByteArrayInputStream(buff);
+            assertThrows(ValidationException.class, () -> ResourceRecord.decode(b));
+        }
+        @Test @DisplayName("Invalid IPv6 size 17")
+        void decodeAAAARDataInvalid1(){
+            byte[] buff = { 0,
+                    0, 28,
+                    0, 1,
+                    0, 0, 0, 0,
+                    0, 17,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+            ByteArrayInputStream b = new ByteArrayInputStream(buff);
+            assertThrows(ValidationException.class, () -> ResourceRecord.decode(b));
+        }
+        @Test @DisplayName("Invalid IPv6 size 4")
+        void decodeAAAARDataInvalid2(){
+            byte[] buff = { 0,
+                    0, 28,
+                    0, 1,
+                    0, 0, 0, 0,
+                    0, 4,
+                    0, 0, 0, 0};
+            ByteArrayInputStream b = new ByteArrayInputStream(buff);
+            assertThrows(ValidationException.class, () -> ResourceRecord.decode(b));
+        }
+
+        /**
+         * Tests invalid label fields in the name domain name field
+         * @param n bad label
+         */
         @ParameterizedTest(name = "Bad label field: {0}")
         @ValueSource(bytes = {5, 3, -3, 0})
         void decodeValidationErrorLabel(byte n){
@@ -557,6 +625,10 @@ class ResourceRecordTest {
             }
         }
 
+        /**
+         * Tests invalid RDLength (too short)
+         * @param n bad rdlength
+         */
         @ParameterizedTest(name = "Bad RDLength field: {0}")
         @ValueSource(bytes = {3, 0})
         void decodeValidationErrorRDLength(byte n){
@@ -572,6 +644,10 @@ class ResourceRecordTest {
             assertThrows(ValidationException.class, () -> ResourceRecord.decode(b));
         }
 
+        /**
+         * Tests bad RDLength fields
+         * @param n bad rdlength
+         */
         @ParameterizedTest(name = "Bad RDLength field (EOF): {0}")
         @ValueSource(bytes = {7, 127, -3, -128})
         void decodeValidationErrorRDLengthEOF(byte n){
@@ -592,6 +668,10 @@ class ResourceRecordTest {
      */
     @Nested
     class DecodeValid {
+        /**
+         * Decode valid names tests
+         * @param name valid name
+         */
         @ParameterizedTest(name = "Valid name = {0}")
         @ValueSource(strings = {"a23456789012345678901234567890123456789012345678901234567890123.",//63
                 "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
@@ -636,6 +716,9 @@ class ResourceRecordTest {
             }
         }
 
+        /**
+         * Simple test with the compressed standard
+         */
         @Test @DisplayName("Test compressed name")
         void decodeName1(){
             byte[] buff = { -64, 5,
@@ -653,6 +736,10 @@ class ResourceRecordTest {
             }
         }
 
+        /**
+         * Test valid domain names in NS RData
+         * @param name valid name
+         */
         @ParameterizedTest(name = "Valid name = {0}")
         @ValueSource(strings = {"a23456789012345678901234567890123456789012345678901234567890123.",//63
                 "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
@@ -702,6 +789,10 @@ class ResourceRecordTest {
             }
         }
 
+        /**
+         * Test valid domain names in CName RData
+         * @param name valid name
+         */
         @ParameterizedTest(name = "Valid name = {0}")
         @ValueSource(strings = {"a23456789012345678901234567890123456789012345678901234567890123.",//63
                 "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
@@ -752,81 +843,9 @@ class ResourceRecordTest {
             }
         }
 
-
-        @Test @DisplayName("Valid IPv4 0.0.0.0")
-        void decodeRDataA0(){
-            byte[] buff = { 0,
-                    0, 1,
-                    0, 1,
-                    0, 0, 0, 0,
-                    0, 4,
-                    0, 0, 0, 0};
-            ByteArrayInputStream b = new ByteArrayInputStream(buff);
-            ResourceRecord temp;
-            try {
-                temp = ResourceRecord.decode(b);
-                assert(temp != null);
-                assertEquals(((A)temp).getAddress(), (Inet4Address)Inet4Address.getByName("0.0.0.0"));
-            } catch (ValidationException | IOException e) {
-                assert(false);
-            }
-        }
-        @Test @DisplayName("Valid IPv4 1.0.255.0")
-        void decodeRDataA1(){
-            byte[] buff = { 0,
-                    0, 1,
-                    0, 1,
-                    0, 0, 0, 0,
-                    0, 4,
-                    1, 0, -1, 0};//-1 == 255 unsigned
-            ByteArrayInputStream b = new ByteArrayInputStream(buff);
-            ResourceRecord temp;
-            try {
-                temp = ResourceRecord.decode(b);
-                assert(temp != null);
-                assertEquals(((A)temp).getAddress(), Inet4Address.getByName("1.0.255.0"));
-            } catch (ValidationException | IOException e) {
-                assert(false);
-            }
-        }
-        @Test @DisplayName("Valid IPv4 255.255.255.255")
-        void decodeRDataA2(){
-            byte[] buff = { 0,
-                    0, 1,
-                    0, 1,
-                    0, 0, 0, 0,
-                    0, 4,
-                    -1, -1, -1, -1};
-            ByteArrayInputStream b = new ByteArrayInputStream(buff);
-            ResourceRecord temp;
-            try {
-                temp = ResourceRecord.decode(b);
-                assert(temp != null);
-                assertEquals(((A)temp).getAddress(), (Inet4Address)Inet4Address.getByName("255.255.255.255"));
-            } catch (ValidationException | IOException e) {
-                assert(false);
-            }
-        }
-        @Test @DisplayName("Valid IPv4 255.0.255.137")
-        void decodeRDataA3(){
-            byte[] buff = { 0,
-                    0, 1,
-                    0, 1,
-                    0, 0, 0, 0,
-                    0, 4,
-                    -1, 0, -1, -119};
-            ByteArrayInputStream b = new ByteArrayInputStream(buff);
-            ResourceRecord temp;
-            try {
-                temp = ResourceRecord.decode(b);
-                assert(temp != null);
-                assertEquals(((A)temp).getAddress(), (Inet4Address)Inet4Address.getByName("255.0.255.137"));
-            } catch (ValidationException | IOException e) {
-                assert(false);
-            }
-        }
+        //The following tests valid IPv4 with compression of name
         @Test @DisplayName("Valid values without EOS and with compression")
-        void decodeRDataA4(){
+        void decodeRDataACompressed(){
             byte[] buff = { -43, 3,
                     0, 1,
                     0, 1,
@@ -838,48 +857,94 @@ class ResourceRecordTest {
             try {
                 temp = ResourceRecord.decode(b);
                 assert(temp != null);
-                assertEquals(((A)temp).getAddress(), (Inet4Address)Inet4Address.getByName("6.7.8.9"));
+                assertEquals(((A)temp).getAddress(), Inet4Address.getByName("6.7.8.9"));
             } catch (ValidationException | IOException e) {
                 assert(false);
             }
         }
 
-        @Test @DisplayName("Test type 2")
-        void decodeNS(){
-            byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
-                            0, 2,
-                            0, 1, //0x0001
-                            0, 0, 0, 0,
-                            0, 6,
-                            3, 'f', 'o', 'o', -64, 5};
+        //The following tests valid IPv6 with compression of name
+        @Test @DisplayName("Valid values without EOS and with compression")
+        void decodeRDataAAAACompressed(){
+            byte[] buff = { -43, 3,
+                    0, 28,
+                    0, 1,
+                    0, 0, 1, 65,
+                    0, 16,
+                    6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21};
+            ByteArrayInputStream b = new ByteArrayInputStream(buff);
+            ResourceRecord temp;
             try {
-                ResourceRecord temp = ResourceRecord.decode(new ByteArrayInputStream(buff));
-                assert temp != null;
-                assertEquals(temp.getClass(), NS.class);
-            } catch (ValidationException | IOException e) {
-                assert(false);
-                e.printStackTrace();
-            }
-        }
-
-        @Test @DisplayName("Test type 5")
-        void decodeCName(){
-            byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
-                    0, 5,
-                    0, 1, //0x0001
-                    0, 0, 0, 0,
-                    0, 6,
-                    3, 'f', 'o', 'o', -64, 5};
-            try {
-                ResourceRecord temp = ResourceRecord.decode(new ByteArrayInputStream(buff));
+                temp = ResourceRecord.decode(b);
                 assert(temp != null);
-                assertEquals(temp.getClass(), CName.class);
+                assertEquals(((AAAA)temp).getAddress(), Inet6Address.getByName("607:809:A0B:C0D:E0F:1011:1213:1415"));
             } catch (ValidationException | IOException e) {
                 assert(false);
-                e.printStackTrace();
             }
         }
 
+        /**
+         * Tests valid IPv4s
+         * @param ipstr valid IPv4
+         */
+        @ParameterizedTest(name = "IPv4 = {0}")
+        @ValueSource(strings = {"0.0.0.0", "1.0.255.0", "255.255.255.255", "255.0.255.137"})
+        void decodeRDataA(String ipstr){
+            byte[] comparisonArrNoIP = {3, 102, 111, 111, 3, 99, 111, 109, 0,//foo.com.
+                    0, 1,//type
+                    0, 1,//0x0001
+                    0, 0, 0, 42,//ttl
+                    0, 4};//rdlength
+
+            try {
+                //Set up helper
+                Inet4Address ip = (Inet4Address)Inet4Address.getByName(ipstr);
+                byte[] buff = concatByteArrs(comparisonArrNoIP, ip.getAddress());
+
+                //Decode
+                ByteArrayInputStream b = new ByteArrayInputStream(buff);
+                ResourceRecord temp = ResourceRecord.decode(b);
+
+                //Validate
+                assert(temp != null);
+                assertEquals(ipstr, ((A)temp).getAddress().getHostAddress());
+            } catch (IOException | ValidationException e) {
+                fail();
+            }
+        }
+
+        /**
+         * Tests valid IPv6s
+         * @param ipstr valid IPv6
+         */
+        @ParameterizedTest(name = "IPv6 = {0}")
+        @ValueSource(strings = {"0:0:0:0:0:0:0:0", "123:4567:89AB:CDEF:123:4567:89AB:CDEF",
+                                "FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF"})
+        void decodeRDataAAAA(String ipstr){
+            byte[] comparisonArrNoIP = {3, 102, 111, 111, 3, 99, 111, 109, 0,//foo.com.
+                    0, 28,//type
+                    0, 1,//0x0001
+                    0, 0, 0, 42,//ttl
+                    0, 16};//rdlength
+
+            try {
+                //Set up helper
+                Inet6Address ip = (Inet6Address)Inet6Address.getByName(ipstr);
+                byte[] buff = concatByteArrs(comparisonArrNoIP, ip.getAddress());
+
+                //Decode
+                ByteArrayInputStream b = new ByteArrayInputStream(buff);
+                ResourceRecord temp = ResourceRecord.decode(b);
+
+                //Validate
+                assert(temp != null);
+                assertEquals(ipstr.toLowerCase(), ((AAAA)temp).getAddress().getHostAddress().toLowerCase());
+            } catch (IOException | ValidationException e) {
+                fail();
+            }
+        }
+
+        //The following 4 tests test for the correct type value
         @Test @DisplayName("Test type 1")
         void decodeA(){
             byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
@@ -894,17 +959,68 @@ class ResourceRecordTest {
                 assertEquals(A.class, temp.getClass());
             } catch (ValidationException | IOException e) {
                 assert(false);
-                e.printStackTrace();
+            }
+        }
+        @Test @DisplayName("Test type 2")
+        void decodeNS(){
+            byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
+                            0, 2,
+                            0, 1, //0x0001
+                            0, 0, 0, 0,
+                            0, 6,
+                            3, 'f', 'o', 'o', -64, 5};
+            try {
+                ResourceRecord temp = ResourceRecord.decode(new ByteArrayInputStream(buff));
+                assert temp != null;
+                assertEquals(temp.getClass(), NS.class);
+            } catch (ValidationException | IOException e) {
+                assert(false);
+            }
+        }
+        @Test @DisplayName("Test type 5")
+        void decodeCName(){
+            byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
+                    0, 5,
+                    0, 1, //0x0001
+                    0, 0, 0, 0,
+                    0, 6,
+                    3, 'f', 'o', 'o', -64, 5};
+            try {
+                ResourceRecord temp = ResourceRecord.decode(new ByteArrayInputStream(buff));
+                assert(temp != null);
+                assertEquals(temp.getClass(), CName.class);
+            } catch (ValidationException | IOException e) {
+                assert(false);
+            }
+        }
+        @Test @DisplayName("Test type 28")
+        void decodeAAAA(){
+            byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
+                    0, 28,
+                    0, 1, //0x0001
+                    0, 0, 0, 0,
+                    0, 16,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+            try {
+                ResourceRecord temp = ResourceRecord.decode(new ByteArrayInputStream(buff));
+                assert(temp != null);
+                assertEquals(AAAA.class, temp.getClass());
+            } catch (ValidationException | IOException e) {
+                assert(false);
             }
         }
 
+        /**
+         * Test decoding TTL
+         * @param ttl ttl
+         */
         @ParameterizedTest(name = "Valid ttl = {0}")
         @ValueSource(ints = {0, 1, 2147483647, 321})
         void decodeTTL(int ttl){
             byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
                     0, 2,
                     0, 1, //0x0001
-                    (byte)((ttl >> 24) & 0xff), (byte)((ttl >> 16) & 0xff), (byte)((ttl >> 8) & 0xff), (byte)((ttl >> 0) & 0xff),
+                    (byte)((ttl >> 24) & 0xff), (byte)((ttl >> 16) & 0xff), (byte)((ttl >> 8) & 0xff), (byte)((ttl) & 0xff),
                     0, 6,
                     3, 'f', 'o', 'o', -64, 5};
 
@@ -918,6 +1034,7 @@ class ResourceRecordTest {
             }
         }
 
+        //Test Unknown name
         @Test @DisplayName("Test Unknown name")
         void decodeUnknown1(){
             byte[] buff = { 0,
@@ -937,6 +1054,7 @@ class ResourceRecordTest {
             }
         }
 
+        //Test Unknown double, premature EoS
         @Test @DisplayName("Test Unknown double, premature EoS")
         void decodeUnknown2(){
             byte[] buff = { 0,
@@ -967,6 +1085,7 @@ class ResourceRecordTest {
 
         }
 
+        //Test 2 unknowns in a row
         @Test @DisplayName("Test Unknown valid double values")
         void decodeUnknown3(){
             byte[] buff = {0,
@@ -991,7 +1110,7 @@ class ResourceRecordTest {
                 assertEquals(8, temp.getTypeValue());
 
                 ResourceRecord temp2 = ResourceRecord.decode(b);
-                assert temp != null;
+                assert temp2 != null;
                 assertEquals(".", temp.getName());
                 assertEquals(321, temp.getTTL());
                 assertEquals(8, temp.getTypeValue());
@@ -1036,7 +1155,9 @@ class ResourceRecordTest {
                 assert(false);
             }
         }
-        @Test
+
+        //Set name null
+        @Test @DisplayName("Set name null")
         void setNameNullPtr() {
             ResourceRecord cn, ns;
             //CName
