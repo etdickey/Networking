@@ -1,3 +1,5 @@
+//Contains the AAAA testing class (see comments below)
+//Created: 10/1/20
 package sdns.serialization.test;
 
 import org.junit.jupiter.api.DisplayName;
