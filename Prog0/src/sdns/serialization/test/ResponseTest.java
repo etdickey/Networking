@@ -25,7 +25,7 @@ class ResponseTest {
     @Test
     void testToString() {
         String expected = "Response: id=500 query=ns.com. " +
-                "answer=[CName: name=a.com. ttl=0 canonicalname=., A: name=b.com. ttl=0 address=0.0.0.0] " +
+                "answers=[CName: name=a.com. ttl=0 canonicalname=., A: name=b.com. ttl=0 address=0.0.0.0] " +
                 "nameservers=[NS: name=ns.com. ttl=0 nameserver=ns1.com.] additionals=[]";
         try {
             Response test = new Response(500, "ns.com.");

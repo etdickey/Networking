@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static sdns.serialization.IOUtils.*;
 import static sdns.serialization.ValidationUtils.VALID_RCODES;
@@ -120,10 +121,16 @@ public class Response extends Message {
         //Write 0x0001
         out.add((byte) 0); out.add((byte) 1);
 
-        //Write ANCount, NSCount, and ARCount
-        out.addAll(Arrays.asList(writeShortBigEndian(this.answerList.size())));
-        out.addAll(Arrays.asList(writeShortBigEndian(this.nameServerList.size())));
-        out.addAll(Arrays.asList(writeShortBigEndian(this.additionalList.size())));
+        //Write ANCount, NSCount, and ARCount DISCOUNTING number of unknowns
+        out.addAll(Arrays.asList(writeShortBigEndian((int) this.answerList.stream()
+                                                                .filter(e -> !(e instanceof Unknown))
+                                                                .count())));
+        out.addAll(Arrays.asList(writeShortBigEndian((int) this.nameServerList.stream()
+                                                                .filter(e -> !(e instanceof Unknown))
+                                                                .count())));
+        out.addAll(Arrays.asList(writeShortBigEndian((int) this.additionalList.stream()
+                                                                .filter(e -> !(e instanceof Unknown))
+                                                                .count())));
     }
 
     /**
@@ -137,7 +144,7 @@ public class Response extends Message {
             encodeRRList(nameServerList, outBuff);
             encodeRRList(additionalList, outBuff);
         } catch(IOException e){
-            throw new RuntimeException("ERROR: internal encoding failure");
+            throw new RuntimeException("ERROR: internal encoding failure: ", e);
         }
 
         //Copy output stream to the output buffer
@@ -237,7 +244,7 @@ public class Response extends Message {
      */
     @Override
     public String toString(){ return "Response: id=" + this.getID() + " query=" + this.getQuery() +
-            " answer=" + this.answerList.toString() +
+            " answers=" + this.answerList.toString() +
             " nameservers=" + this.nameServerList.toString() +
             " additionals=" + this.additionalList.toString(); }
 

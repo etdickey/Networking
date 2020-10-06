@@ -80,7 +80,9 @@ class IOUtils {
      */
     static void encodeRRList(List<ResourceRecord> rrs, OutputStream out) throws IOException {
         for(var rr : rrs){
-            rr.encode(out);
+            if(!(rr instanceof Unknown)){
+                rr.encode(out);
+            }
         }
     }
 
