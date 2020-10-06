@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static sdns.serialization.IOUtils.*;
 import static sdns.serialization.ValidationUtils.VALID_RCODES;
