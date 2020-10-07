@@ -198,12 +198,10 @@ class AAAATest {
                 System.arraycopy(comparisonArrNoIP, 0, comparisonArr, 0, comparisonArrNoIP.length);
                 System.arraycopy(addr, 0, comparisonArr, comparisonArrNoIP.length, addr.length);
 
-                System.out.println("Arr: " + Arrays.toString(comparisonArr));
                 //A object instantiation here
                 AAAA testA = new AAAA("foo.com.", 42, getDefault0IPv6());
                 testA.encode(testStream);
                 byte[] dumpArray = testStream.toByteArray();
-                System.out.println("Arr: " + Arrays.toString(dumpArray));
                 testStream.reset();
                 assertArrayEquals(comparisonArr, dumpArray);
             } catch (ValidationException | IOException e) {

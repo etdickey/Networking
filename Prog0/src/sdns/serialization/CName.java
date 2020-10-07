@@ -69,7 +69,7 @@ public class CName extends ResourceRecord {
         if(validateDomainName(canonicalName)){
             this.canonicalName = canonicalName;
         } else {
-            throw new ValidationException("Canonical Name did not pass domain name checks", canonicalName);
+            throw new ValidationException("Canonical Name did not pass domain name checks: " + canonicalName, canonicalName);
         }
 
         return this;

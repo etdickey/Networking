@@ -137,8 +137,7 @@ class MessageTest {
 
     @Nested
     class DecodeQueryMalformed {
-        @Test
-        @DisplayName("Basic header test error short query name")
+        @Test @DisplayName("Basic header test error short query name")
         void queryDecodeMal1(){
             byte[] buff = { 0, 0,//id
                     0, 0, //0 0000 [ignored bit]x4 000 0000
@@ -152,8 +151,7 @@ class MessageTest {
             };
             assertThrows(ValidationException.class, () -> Message.decode(buff));
         }
-        @Test
-        @DisplayName("Basic header test error short query name ending")
+        @Test @DisplayName("Basic header test error short query name ending")
         void queryDecodeMal2(){
             byte[] buff = { 0, 0,//id
                     0, 0, //0 0000 [ignored bit]x4 000 0000
@@ -167,8 +165,7 @@ class MessageTest {
             };
             assertThrows(ValidationException.class, () -> Message.decode(buff));
         }
-        @Test
-        @DisplayName("Basic header test error short query name beginning")
+        @Test @DisplayName("Basic header test error short query name beginning")
         void queryDecodeMal3(){
             byte[] buff = { 0, 0,//id
                     0, 0, //0 0000 [ignored bit]x4 000 0000
@@ -182,8 +179,7 @@ class MessageTest {
             };
             assertThrows(ValidationException.class, () -> Message.decode(buff));
         }
-        @Test
-        @DisplayName("Basic header test error short query 0x00FF")
+        @Test @DisplayName("Basic header test error short query 0x00FF")
         void queryDecodeMal4(){
             byte[] buff = { 0, 0,//id
                     0, 0, //0 0000 [ignored bit]x4 000 0000
@@ -197,8 +193,7 @@ class MessageTest {
             };
             assertThrows(ValidationException.class, () -> Message.decode(buff));
         }
-        @Test
-        @DisplayName("Basic header test error short query 0x00FF")
+        @Test @DisplayName("Basic header test error short query 0x00FF")
         void queryDecodeMal5(){
             byte[] buff = { 0, 0,//id
                     0, 0, //0 0000 [ignored bit]x4 000 0000
@@ -212,8 +207,7 @@ class MessageTest {
             };
             assertThrows(ValidationException.class, () -> Message.decode(buff));
         }
-        @Test
-        @DisplayName("Basic header test error short query 0x0001")
+        @Test @DisplayName("Basic header test error short query 0x0001")
         void queryDecodeMal6(){
             byte[] buff = { 0, 0,//id
                     0, 0, //0 0000 [ignored bit]x4 000 0000
@@ -227,8 +221,7 @@ class MessageTest {
             };
             assertThrows(ValidationException.class, () -> Message.decode(buff));
         }
-        @Test
-        @DisplayName("Basic header test error short query 0x0001")
+        @Test @DisplayName("Basic header test error short query 0x0001")
         void queryDecodeMal7(){
             byte[] buff = { 0, 0,//id
                     0, 0, //0 0000 [ignored bit]x4 000 0000
@@ -247,8 +240,7 @@ class MessageTest {
     @Nested
     class DecodeValidationException {
         //Basic query test
-        @Test
-        @DisplayName("Basic query test invalid 0x0001")
+        @Test @DisplayName("Basic query test invalid 0x0001")
         void queryDecodeInvalid1(){
             byte[] buff = { 0, 0,//id
                     0, 0, //0 0000 [ignored bit]x4 000 0000
@@ -264,8 +256,7 @@ class MessageTest {
         }
 
         //Invalid 0x0001
-        @Test
-        @DisplayName("Basic query test invalid 0x0001")
+        @Test @DisplayName("Basic query test invalid 0x0001")
         void queryDecodeInvalid2(){
             byte[] buff = { 0, 0,//id
                     0, 0, //0 0000 [ignored bit]x4 000 0000
@@ -281,8 +272,7 @@ class MessageTest {
         }
 
         //Invalid ANCount
-        @Test
-        @DisplayName("Basic query test invalid ANCount")
+        @Test @DisplayName("Basic query test invalid ANCount")
         void queryDecodeInvalid3(){
             byte[] buff = { 0, 0,//id
                     0, 0, //0 0000 [ignored bit]x4 000 0000
@@ -298,8 +288,7 @@ class MessageTest {
         }
 
         //Invalid NSCount
-        @Test
-        @DisplayName("Basic query test invalid NSCount")
+        @Test @DisplayName("Basic query test invalid NSCount")
         void queryDecodeInvalid4(){
             byte[] buff = { 0, 0,//id
                     0, 0, //0 0000 [ignored bit]x4 000 0000
@@ -315,8 +304,7 @@ class MessageTest {
         }
 
         //Invalid ARCount
-        @Test
-        @DisplayName("Basic query test invalid ARCount")
+        @Test @DisplayName("Basic query test invalid ARCount")
         void queryDecodeInvalid5(){
             byte[] buff = { 0, 0,//id
                     0, 0, //0 0000 [ignored bit]x4 000 0000
@@ -489,7 +477,6 @@ class MessageTest {
                         () -> assertEquals(a2, ((Response)temp).getAdditionalList().get(0))
                         );
             } catch (ValidationException | UnknownHostException e) {
-                System.out.println("ERROR: " + e.getMessage());
                 assert(false);
             }
         }

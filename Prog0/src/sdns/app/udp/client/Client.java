@@ -1,3 +1,5 @@
+//Contains the Client class (see comments below)
+//Created: 10/1/20
 package sdns.app.udp.client;
 
 import sdns.serialization.Message;
@@ -137,7 +139,6 @@ public class Client {
             System.exit(1);
         }
 
-        out.println("ServAddr: " + servAddr.toString());
         if (!pack.getAddress().equals(servAddr)) {// Check source
             out.println("Received packet from an unknown source");
             System.exit(1);
@@ -146,7 +147,6 @@ public class Client {
         //have a packet!
         Message m;
         try {
-            out.println("Length: " + pack.getLength());
             m = Message.decode(Arrays.copyOfRange(pack.getData(), 0, pack.getLength()));
 
             //handle bad type
@@ -245,12 +245,6 @@ public class Client {
         } catch (IOException e) {
             out.println("ERROR: I/O error while writing to socket: " + e.getMessage());
             System.exit(1);
-        }
-
-        //TODO:: REMOVE AFTER TESTING
-        out.println("Queries:");
-        for(var query : el){
-            out.println(query.toString());
         }
 
         //Then process responses as described in the Client Protocol (in the specification)
