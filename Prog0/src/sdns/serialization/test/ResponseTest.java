@@ -280,32 +280,25 @@ class ResponseTest {
      * Test get set response code
      */
     @Nested
-    class ResponseGetSetResponseCode {
-        //invalid tests
-        @ParameterizedTest(name = "Invalid response code = {0}")
-        @ValueSource(ints = {-1, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 2147483647, -2147483648, -64})
-        void invalidResponseCode(int code){
-            Response r;
+    class ResponseGetSetResponseCode extends RCodeSetGetAbstractTest {
+        /**
+         * Factory method for calling the appropriate function you want to test for rcode validity
+         *
+         * @param rcode rcode to call with
+         * @return the result of a getRCode on the respective object
+         * @throws ValidationException if invalid rcode
+         */
+        @Override
+        RCode callSetGetRCode(int rcode) throws ValidationException {
+            Response r = null;
             try {
                 r = new Response(0, ".");
-                assertThrows(ValidationException.class, () -> r.setResponseCode(code));
             } catch (ValidationException e) {
                 assert(false);
             }
-        }
 
-        //Valid tests
-        @ParameterizedTest(name = "Valid response code = {0}")
-        @ValueSource(ints = {0, 1 ,2, 3, 4, 5})
-        void validResponseCode(int code){
-            Response r;
-            try {
-                r = new Response(0, ".");
-                r.setResponseCode(code);
-                assertEquals(code, r.getResponseCode());
-            } catch (ValidationException e) {
-                assert(false);
-            }
+            r.setResponseCode(rcode);
+            return r.getResponseCode();
         }
     }
 
@@ -389,7 +382,7 @@ class ResponseTest {
                 assertAll("other fields", () -> assertEquals(0, r.getAdditionalList().size()),
                         () -> assertEquals(0, r.getAnswerList().size()),
                         () -> assertEquals(0, r.getNameServerList().size()),
-                        () -> assertEquals(0, r.getResponseCode())
+                        () -> assertEquals(RCode.NOERROR, r.getResponseCode())
                         );
             } catch (ValidationException | NullPointerException e) {
                 assert(false);

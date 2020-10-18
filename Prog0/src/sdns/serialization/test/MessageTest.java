@@ -1,3 +1,5 @@
+//Contains the MessageTest class (see comments below)
+//Created: 9/18/20
 package sdns.serialization.test;
 
 import org.junit.jupiter.api.DisplayName;
@@ -356,11 +358,11 @@ class MessageTest {
 
     @Nested
     class DecodeValid {
-        @Test
-        @DisplayName("Basic query test")
+        //Basic test
+        @Test @DisplayName("Basic query test")
         void basicQueryDecode(){
             byte[] buff = { 0, 0,//id
-                    0, 0, //0 0000 [ignored bit]x4 000 0000
+                    0, 0, //0 0000 [ignored bit]x7 0000
                     0, 1, //0x0001
                     0, 0, //ANCount
                     0, 0, //NSCount
@@ -380,11 +382,35 @@ class MessageTest {
             }
         }
 
-        @Test
-        @DisplayName("Basic response test")
+        //Testing ignoring certain header fields
+        @Test @DisplayName("Basic query test (ignore header fields)")
+        void basicQueryDecode2(){
+            byte[] buff = { 0, 0,//id
+                    7, -16, //0 0000 [ignored bit]x7 0000
+                    0, 1, //0x0001
+                    0, 0, //ANCount
+                    0, 0, //NSCount
+                    0, 0, //ARCount
+                    3, 'f', 'o', 'o', -64, 5,//query
+                    0, -1,//0x00FF
+                    0, 1  //0x0001
+            };
+            try {
+                Message temp = Message.decode(buff);
+                assert temp != null;
+                assertAll(() -> assertEquals("foo.", temp.getQuery()),
+                        () -> assertEquals(0, temp.getID())
+                        );
+            } catch (ValidationException e) {
+                assert(false);
+            }
+        }
+
+        //Comprehensive response test
+        @Test @DisplayName("Basic response test")
         void basicResponseDecode(){
             byte[] buff = { 0, 0,//id
-                    -128, 0, //1 0000 [ignored bit]x4 000 0000
+                    -128, 0, //1 0000 [ignored bit]x7 0000
                     0, 1, //0x0001
                     0, 3, //ANCount
                     0, 2, //NSCount
@@ -450,7 +476,7 @@ class MessageTest {
                     0, 1, //0x0001
                     0, 0, 0, 0,
                     0, 6,
-                    3, 'f', 'o', 'o', -64, 5,
+                    3, 'f', 'o', 'o', -64, 5
             };
             try {
                 Message temp = Message.decode(buff);
@@ -476,6 +502,60 @@ class MessageTest {
                         () -> assertEquals(a1, ((Response)temp).getAnswerList().get(1)),
                         () -> assertEquals(a2, ((Response)temp).getAdditionalList().get(0))
                         );
+            } catch (ValidationException | UnknownHostException e) {
+                assert(false);
+            }
+        }
+
+        //Basic response test ignoring certain header fields
+        @Test @DisplayName("Basic response test (ignore header fields)")
+        void basicResponseDecode2(){
+            byte[] buff = { 0, 0,//id
+                    -121, -16, //1 0000 [ignored bit]x7 0000
+                    0, 1, //0x0001
+                    0, 3, //ANCount
+                    0, 0, //NSCount
+                    0, 0, //ARCount
+                    //query
+                    3, 'f', 'o', 'o', -64, 5,
+                    0, -1,//0x00FF
+                    0, 1,  //0x0001
+                    //answer
+                    3, 'f', 'o', 'o', -64, 5,//CName
+                    0, 5,
+                    0, 1, //0x0001
+                    0, 0, 0, 0,
+                    0, 6,
+                    3, 'f', 'o', 'o', -64, 5,
+
+                    0,//A
+                    0, 1,
+                    0, 1,
+                    0, 0, 0, 0,
+                    0, 4,
+                    -1, 0, -1, -119,
+
+                    -64, 5,//NS
+                    0, 2,
+                    0, 1, //0x0001
+                    0, 0, 0, 0,
+                    0, 6,
+                    3, 'f', 'o', 'o', -64, 5
+            };
+            try {
+                Message temp = Message.decode(buff);
+                assert temp != null;
+
+                NS ns1 = new NS(".", 0, "foo.");
+                CName cn1 = new CName("foo.", 0, "foo.");
+                A a1 = new A(".", 0, (Inet4Address)Inet4Address.getByName("255.0.255.137"));
+
+                assertAll(() -> assertEquals(Response.class, temp.getClass()),
+                        () -> assertEquals("foo.", temp.getQuery()),
+                        () -> assertEquals(0, temp.getID()),
+                        () -> assertEquals(ns1, ((Response)temp).getAnswerList().get(2)),
+                        () -> assertEquals(cn1, ((Response)temp).getAnswerList().get(0)),
+                        () -> assertEquals(a1, ((Response)temp).getAnswerList().get(1)));
             } catch (ValidationException | UnknownHostException e) {
                 assert(false);
             }
