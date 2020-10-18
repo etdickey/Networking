@@ -52,7 +52,7 @@ public abstract class EqualsAndHashCodeCaseInsensitiveTestFactory<T> extends Equ
     /**
      * Factory method for generating the second same object as getDefaultObject0 but with a different case
      *  to test for ignore case equality
-     * Defaults to getDefaultObjectDifferentCase0 (if only 1 field to test)
+     * Defaults to getDefaultObjectDifferentCase1 (if only 1 field to test)
      * @return the default object for this class
      * @throws ValidationException if invalid object
      */

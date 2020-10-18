@@ -179,7 +179,7 @@ public abstract class EqualsAndHashCodeTestFactory<T> {
      * Test for inequal hashcodes for similar objects but different types
      */
     @Test @DisplayName("Non-equal objects prefer non-equal hash codes")
-    void testInequalHashCodesDifferentTypes(){
+    void testUnequalHashCodesDifferentTypes(){
         try {
             T a = getDefaultObject0(), b = getDifferentTypeObject();
             assertNotEquals(a.hashCode(), b.hashCode());
