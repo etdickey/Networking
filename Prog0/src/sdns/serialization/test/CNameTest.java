@@ -5,8 +5,6 @@ package sdns.serialization.test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import sdns.serialization.*;
 import sdns.serialization.test.factories.DomainNameTestFactory;
 import sdns.serialization.test.factories.EqualsAndHashCodeCaseInsensitiveTestFactory;
@@ -28,7 +26,7 @@ class CNameTest {
     /**
      * test get type value (trivial) (DONE)
      */
-    @Test
+    @Test @DisplayName("Get type value")
     void getTypeValue() {
         CName cn;
         try {
@@ -42,7 +40,7 @@ class CNameTest {
     /**
      * Test to string (DONE)
      */
-    @Test
+    @Test @DisplayName("ToString")
     void testToString() {
         String expected = "CName: name=foo.com. ttl=42 canonicalname=thisIsABoringName.";
         try {
@@ -95,7 +93,7 @@ class CNameTest {
      * Constructor tests (valid and invalid) (DONE)
      */
     @Nested
-    class CNameConstructorValidTests {
+    class CNameConstructorTests {
         /**
          * CName constructor name tests
          */
@@ -186,6 +184,9 @@ class CNameTest {
     //Test each section
     //  input too long, too short, null, invalid characters, missing sections
     //  case insensitivity
+    /**
+     * Test encode
+     */
     @Nested
     class EncodeTests {
         ByteArrayOutputStream testStream = new ByteArrayOutputStream();
