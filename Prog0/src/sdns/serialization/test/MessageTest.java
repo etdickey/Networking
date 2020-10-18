@@ -10,9 +10,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import sdns.serialization.*;
 
-import java.io.ByteArrayInputStream;
-import java.io.EOFException;
-import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 
@@ -564,87 +561,58 @@ class MessageTest {
 
     //test getter and setter for id
     @Nested
-    class GetSetID {
-        //ID test:: unsigned 16 bit integer
-        @ParameterizedTest(name = "ID = {0}")
-        @ValueSource(ints = {65536, -1, -2147418113})
-        void setIdInvalid(int id){
-            Message q;
-            try {
+    class GetSetID extends SdnsIDTestFactory {
+        /**
+         * Factory method for calling the appropriate function you want to test for SDNS ID validity
+         *
+         * @param id id to test
+         * @return the result of a getID on the respective object
+         * @throws ValidationException if invalid SDNS ID
+         */
+        @Override
+        protected int setGetID(int id) throws ValidationException {
+            Message q = null;
+            try {//shouldn't fail for constructor
                 q = new Response(0, ".");
-                assertThrows(ValidationException.class, () -> q.setID(id));
             } catch (ValidationException e) {
-                assert(false);
+                fail();
             }
-        }
-
-        //Test valid IDs (16 bit unsigned int)
-        @ParameterizedTest(name = "ID = {0}")
-        @ValueSource(ints = {0, 1, 65535, 65280, 32768, 34952, 34824})
-        void setIdValid(int id){
-            Message q;
-            try {
-                q = new Response(0, ".");
-                q.setID(id);
-                assertEquals(id, q.getID());
-            } catch (ValidationException e) {
-                assert(false);
-            }
+            q.setID(id);
+            return q.getID();
         }
     }
 
     //test getter and setter for query
     @Nested
-    class GetSetQuery {
-        //Yay another domain name test
-        @ParameterizedTest(name = "Query = {0}")
-        @ValueSource(strings = {"", "asdf", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.⭐.⭕.",
-                "-a.f", "-.", "-",
-                "a234567890123456789012345678901234567890123456789012345678901234.",//64
-                "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
-                        "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
-                        "a2345678901."//256
-        })
-        void setQueryInvalid(String query){
-            Message q;
-            try {
+    class GetSetQuery extends DomainNameTestFactory {
+        /**
+         * Factory method for calling the appropriate function you want to test for domain name validity
+         *
+         * @param dm domain name to test
+         * @return the result of a getDM on the respective object
+         * @throws ValidationException if invalid domain name
+         */
+        @Override
+        protected String setGetDomainName(String dm) throws ValidationException {
+            Message q = null;
+            try {//shouldn't fail
                 q = new Response(0, ".");
-                assertThrows(ValidationException.class, () -> q.setQuery(query));
-            } catch (ValidationException e) {
-                assert(false);
+            } catch(ValidationException e){
+                fail();
             }
+            q.setQuery(dm);
+            return q.getQuery();
         }
 
-        //null test
-        @Test
-        @DisplayName("Null query")
-        void setQueryNull(){
-            Message q;
-            try {
-                q = new Response(0, ".");
-                assertThrows(ValidationException.class, () -> q.setQuery(null));
-            } catch (ValidationException e) {
-                assert(false);
-            }
-        }
-
-        //Valid queries (domain name tests)
-        @ParameterizedTest(name = "Query = {0}")
-        @ValueSource(strings = {"a23456789012345678901234567890123456789012345678901234567890123.",
-                "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
-                        "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
-                        "a234567890.",//255
-                "foo.", "foo.com.", "f0-9.c0m.", "google.com.", "www.baylor.edu.", "f0.c-0.", ".", "f-0.", "f-0a."
-        })
-        void setQueryValid(String query){
-            Message q;
-            try {
-                q = new Response(0, ".");
-                q.setQuery(query);
-                assertEquals(query, q.getQuery());
-            } catch (ValidationException e) {
-                assert(false);
-            }
+        /**
+         * Allows the concrete class to specify which exception it wants to be thrown when a
+         * null string is passed to the function
+         *
+         * @return class to throw
+         */
+        @Override
+        protected Class<? extends Throwable> getNullThrowableType() {
+            return ValidationException.class;
         }
     }
 }

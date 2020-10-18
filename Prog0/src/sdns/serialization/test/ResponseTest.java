@@ -5,8 +5,6 @@ package sdns.serialization.test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import sdns.serialization.*;
 
 import java.net.Inet4Address;
@@ -303,77 +301,12 @@ class ResponseTest {
     }
 
     /**
-     * Response constructor invalid tests (DONE)
+     * Response constructor tests (valid and invalid) (DONE)
      */
     @Nested
-    class ResponseConstructorInvalid {
-        //ID test:: unsigned 16 bit integer
-        @ParameterizedTest(name = "ID = {0}")
-        @ValueSource(ints = {65536, -1, -2147418113})
-        void constIdTestInvalid(int id){
-            assertThrows(ValidationException.class, () -> new Response(id, "."));
-        }
-
-        //Yay another domain name test
-        @ParameterizedTest(name = "Query = {0}")
-        @ValueSource(strings = {"", "asdf", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.⭐.⭕.",
-                "-a.f", "-.", "-",
-                "a234567890123456789012345678901234567890123456789012345678901234.",//64
-                "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
-                        "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
-                        "a2345678901."//256
-        })
-        void constQueryTestInvalid(String query){
-            assertThrows(ValidationException.class, () -> new Response(0, query));
-        }
-
-        //Null query test
-        @Test
-        @DisplayName("Null query")
-        void constQueryNullTest(){
-            assertThrows(ValidationException.class, () -> new Response(0, null));
-        }
-    }
-
-    /**
-     * Response constructor valid tests (DONE)
-     */
-    @Nested
-    class ResponseConstructorValid {
-        //Test valid IDs (16 bit unsigned int)
-        @ParameterizedTest(name = "ID = {0}")
-        @ValueSource(ints = {0, 1, 65535, 65280, 32768, 34952, 34824})
-        void constIdTestValid(int id){
-            Message q;
-            try {
-                q = new Response(id, ".");
-                assertEquals(id, q.getID());
-            } catch (ValidationException e) {
-                assert(false);
-            }
-        }
-
-        //Valid queries (domain name tests)
-        @ParameterizedTest(name = "Query = {0}")
-        @ValueSource(strings = {"a23456789012345678901234567890123456789012345678901234567890123.",
-                "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
-                        "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
-                        "a234567890.",//255
-                "foo.", "foo.com.", "f0-9.c0m.", "google.com.", "www.baylor.edu.", "f0.c-0.", ".", "f-0.", "f-0a."
-        })
-        void constQueryTestValue(String query){
-            Message q;
-            try {
-                q = new Response(0, query);
-                assertEquals(query, q.getQuery());
-            } catch (ValidationException e) {
-                assert(false);
-            }
-        }
-
+    class ResponseConstructorTests {
         //Test that all fields are initialized
-        @Test
-        @DisplayName("Testing other fields are initialized")
+        @Test @DisplayName("Testing other fields are initialized")
         void constInitializationTest(){
             Response r;
             try {
@@ -383,120 +316,68 @@ class ResponseTest {
                         () -> assertEquals(0, r.getAnswerList().size()),
                         () -> assertEquals(0, r.getNameServerList().size()),
                         () -> assertEquals(RCode.NOERROR, r.getResponseCode())
-                        );
+                );
             } catch (ValidationException | NullPointerException e) {
                 assert(false);
             }
+        }
+
+        /**
+         * Response constructor SDNS ID tests (valid and invalid)
+         */
+        @Nested
+        class ResponseConstructorIDTests extends SdnsIDTestFactory {
+            /**
+             * Factory method for calling the appropriate function you want to test for SDNS ID validity
+             *
+             * @param id id to test
+             * @return the result of a getID on the respective object
+             * @throws ValidationException if invalid SDNS ID
+             */
+            @Override
+            protected int setGetID(int id) throws ValidationException {
+                Message q = new Response(id, ".");
+                return q.getID();
+            }
+        }
+
+        /**
+         * Response constructor query tests (valid and invalid)
+         */
+        @Nested
+        class ResponseConstructorQueryTests extends DomainNameTestFactory {
+            /**
+             * Factory method for calling the appropriate function you want to test for domain name validity
+             *
+             * @param dm domain name to test
+             * @return the result of a getDM on the respective object
+             * @throws ValidationException if invalid domain name
+             */
+            @Override
+            protected String setGetDomainName(String dm) throws ValidationException {
+                Message q = new Response(0, dm);
+                return q.getQuery();
+            }
+
+            /**
+             * Allows the concrete class to specify which exception it wants to be thrown when a
+             * null string is passed to the function
+             *
+             * @return class to throw
+             */
+            @Override
+            protected Class<? extends Throwable> getNullThrowableType() { return ValidationException.class; }
         }
     }
 
 
     /**
-     * Response equals() basic tests
+     * Response equals() and hashcode() tests
      */
     @Nested
-    static
-    class Equals {
-        //basic equal test
-        @Test
-        @DisplayName("Equals test")
-        void equality1(){
-            Response u1, u2;
-
-            try {
-                u1 = new Response(0, "foo.");
-                u2 = new Response(0, "foo.");
-
-                assertTrue(u1.equals(u2));
-                assertTrue(u2.equals(u1));
-            } catch (ValidationException e) {
-                assert(false);
-            }
-        }
-
-        //not not equal based on presumed testing from professor
-        @Test
-        @DisplayName("Equals tests not not equals")
-        void equality2(){
-            Response u1, u2;
-
-            try {
-                u1 = new Response(123, "good.com.");
-                u2 = new Response(123, "good.com.");
-
-                assertFalse(!u1.equals(u2));
-                assertFalse(!u2.equals(u1));
-            } catch (ValidationException e) {
-                assert(false);
-            }
-        }
-
-        //not equal query
-        @Test
-        @DisplayName("Equals tests not equals")
-        void equality3(){
-            Response u1, u2;
-
-            try {
-                u1 = new Response(123, "good.com.");
-                u2 = new Response(123, "good.com.q.");
-
-                assertFalse(u1.equals(u2));
-                assertFalse(u2.equals(u1));
-            } catch (ValidationException e) {
-                assert(false);
-            }
-        }
-
-        //not equal id
-        @Test
-        @DisplayName("Equals tests not equals")
-        void equality4(){
-            Response u1, u2;
-
-            try {
-                u1 = new Response(123, "good.com.");
-                u2 = new Response(379, "good.com.");//this makes 0000 0000 0111 1011 into 0000 0001 0111 1011
-
-                assertFalse(u1.equals(u2));
-                assertFalse(u2.equals(u1));
-            } catch (ValidationException e) {
-                assert(false);
-            }
-        }
-
-        //not equal classes
-        //done in Query
-
-        //complex equal test
-        @Test
-        @DisplayName("Equals test")
-        void equality5(){
-            Response u1, u2;
-
-            try {
-                u1 = new Response(0, "foo.");
-                u2 = new Response(0, "foo.");
-
-                CName cn = new CName(".", 123, "good.com.");
-                CName cn2 = new CName(".", 123, "good.com.q.");
-                NS ns = new NS(".", 123, "good.server.");
-                A a = new A(".", 123, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
-                NS ns1 = new NS(".", 123, "good.server.");
-                NS ns2 = new NS(".", 123, "good.server.a1.");
-                complexEqualsHelper(u1, cn, cn2, ns, a, ns1, ns2);
-
-                complexEqualsHelper(u2, cn, cn2, ns, a, ns1, ns2);
-
-                assertTrue(u1.equals(u2));
-                assertTrue(u2.equals(u1));
-            } catch (ValidationException | UnknownHostException e) {
-                assert(false);
-            }
-        }
-
+    class EqualsAndHashCode extends EqualsAndHashCodeTestFactory<Response> {
         //helper setter for complex objects
-        static void complexEqualsHelper(Response u1, CName cn, CName cn2, NS ns, A a, NS ns1, NS ns2) throws ValidationException {
+        void complexEqualsHelper(Response u1, CName cn, CName cn2, NS ns, A a, NS ns1, NS ns2) throws ValidationException {
             u1.addNameServer(ns1);
             u1.addNameServer(ns2);
             u1.addAdditional(cn);
@@ -508,106 +389,96 @@ class ResponseTest {
             u1.addAnswer(cn2);
             u1.addAnswer(a);
         }
-    }
 
-    /**
-     * Response hashcode() basic tests
-     */
-    @Nested
-    class HashCode {
-        //basic HashCode test
-        @Test
-        @DisplayName("HashCode test")
-        void hashCode1(){
-            Response u1, u2;
-
-            try {
-                u1 = new Response(0, "foo.");
-                u2 = new Response(0, "foo.");
-
-                assertEquals(u1.hashCode(), u2.hashCode());
-            } catch (ValidationException e) {
-                assert(false);
-            }
+        /**
+         * Factory method for generating a default object to test for (in)equality
+         *
+         * @return the default object for this class
+         */
+        @Override
+        protected Response getDefaultObject0() throws ValidationException {
+            return new Response(0, "good.com.");
         }
 
-        //Different hashcode test
-        @Test
-        @DisplayName("HashCode test 2")
-        void hashCode2(){
-            Response u1, u2;
-
-            try {
-                u1 = new Response(123, "good.com.");
-                u2 = new Response(123, "good.com.");
-
-                assertEquals(u1.hashCode(), u2.hashCode());
-            } catch (ValidationException e) {
-                assert(false);
-            }
+        /**
+         * Factory method for generating a second object to test for (in)equality
+         *
+         * @return the default object for this class
+         */
+        @Override
+        protected Response getDefaultObject1() throws ValidationException {
+            return new Response(123, "good.com.q.");
         }
 
-        //not equal query hashcode
-        @Test
-        @DisplayName("HashCode tests not equal query")
-        void hashCode3(){
-            Response u1, u2;
-
-            try {
-                u1 = new Response(123, "good.com.");
-                u2 = new Response(123, "good.com.q.");
-
-                assertNotEquals(u1.hashCode(), u2.hashCode());
-            } catch (ValidationException e) {
-                assert(false);
-            }
+        /**
+         * Factory method for generating a third object to test for (in)equality
+         *
+         * @return the default object for this class
+         */
+        @Override
+        protected Response getDefaultObject2() throws ValidationException {
+            return new Response(379, "good.com.");//this makes 0000 0000 0111 1011 into 0000 0001 0111 1011
         }
 
-        //not equal id hashcode
-        @Test
-        @DisplayName("HashCode tests not equal id")
-        void hashCode4(){
-            Response u1, u2;
+        /**
+         * Factory method for generating a fourth object to test for (in)equality
+         *
+         * @return the default object for this class
+         */
+        @Override
+        protected Response getDefaultObject3() throws ValidationException {
+            Response u1 = new Response(0, "foo.");
 
+            CName cn = new CName(".", 123, "good.com.");
+            CName cn2 = new CName(".", 123, "good.com.q.");
+            NS ns = new NS(".", 123, "good.server.");
+            A a = null;
             try {
-                u1 = new Response(123, "good.com.");
-                u2 = new Response(379, "good.com.");//this makes 0000 0000 0111 1011 into 0000 0001 0111 1011
-
-                assertNotEquals(u1.hashCode(), u2.hashCode());
-            } catch (ValidationException e) {
-                assert(false);
+                a = new A(".", 123, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
+            } catch (UnknownHostException e) {
+                fail();
             }
+            NS ns1 = new NS(".", 123, "good.server.");
+            NS ns2 = new NS(".", 123, "good.server.a1.");
+            complexEqualsHelper(u1, cn, cn2, ns, a, ns1, ns2);
+
+            return u1;
         }
 
-        //not equal id hashcode
-        @Test
-        @DisplayName("HashCode tests complex equals")
-        void hashCode5(){
-            Response u1, u2;
+        /**
+         * Factory method for generating a fifth object to test for (in)equality
+         * RESERVED FOR COMPLEX EQUALS
+         * @return the default object for this class
+         */
+        @Override
+        protected Response getDefaultObject4() throws ValidationException {
+            Response u1 = new Response(0, "foo.");
 
+            CName cn = new CName(".", 123, "good.com.");
+            CName cn2 = new CName(".", 123, "good.com.q.");
+            NS ns = new NS(".", 123, "good.server.");
+            A a = null;
             try {
-                u1 = new Response(123, "good.com.");
-                u2 = new Response(123, "good.com.");
-
-                CName cn = new CName(".", 123, "good.com.");
-                CName cn2 = new CName(".", 123, "good.com.q.");
-                NS ns = new NS(".", 123, "good.server.");
-                A a = new A(".", 123, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
-                NS ns1 = new NS(".", 123, "good.server.");
-                NS ns2 = new NS(".", 123, "good.server.a1.");
-                complexEqualsHelper(u1, cn, cn2, ns, a, ns1, ns2);
-
-                complexEqualsHelper(u2, cn, cn2, ns, a, ns1, ns2);
-
-                assertEquals(u1.hashCode(), u2.hashCode());
-            } catch (ValidationException | UnknownHostException e) {
-                assert(false);
+                a = new A(".", 123, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
+            } catch (UnknownHostException e) {
+                fail();
             }
+            NS ns1 = new NS(".", 123, "good.server.");
+            NS ns2 = new NS(".", 123, "good.server.a.");//DIFFERENCE IS HERE
+            complexEqualsHelper(u1, cn, cn2, ns, a, ns1, ns2);
+
+            return u1;
         }
 
-        //helper setter functions
-        private void complexEqualsHelper(Response u1, CName cn, CName cn2, NS ns, A a, NS ns1, NS ns2) throws ValidationException {
-            Equals.complexEqualsHelper(u1, cn, cn2, ns, a, ns1, ns2);
+        /**
+         * Factory method for generating a SIMILAR object of a different type to test for inequality
+         * in types and hashcodes
+         *
+         * @return instantiation of different class object with similar field definitions
+         */
+        @Override
+        protected Query getDifferentTypeObject() throws ValidationException {
+            return new Query(0, "good.com.");
         }
     }
 

@@ -5,11 +5,7 @@ package sdns.serialization.test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import sdns.serialization.*;
-
-import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -19,71 +15,56 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class QueryTest {
     /**
-     * Query constructor invalid tests
+     * Query constructor tests
      */
     @Nested
-    class QueryConstructorInvalid {
-        //ID test:: unsigned 16 bit integer
-        @ParameterizedTest(name = "ID = {0}")
-        @ValueSource(ints = {65536, -1, -2147418113})
-        void constIdTestInvalid(int id){
-            assertThrows(ValidationException.class, () -> new Query(id, "."));
-        }
-
-        //Yay another domain name test
-        @ParameterizedTest(name = "Query = {0}")
-        @ValueSource(strings = {"", "asdf", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.⭐.⭕.",
-                "-a.f", "-.", "-",
-                "a234567890123456789012345678901234567890123456789012345678901234.",//64
-                "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
-                        "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
-                        "a2345678901."//256
-        })
-        void constQueryTestInvalid(String query){
-            assertThrows(ValidationException.class, () -> new Query(0, query));
-        }
-
-        //Null query test
-        @Test
-        @DisplayName("Null query")
-        void constQueryNullTest(){
-            assertThrows(ValidationException.class, () -> new Query(0, null));
-        }
-    }
-
-    /**
-     * Query constructor valid tests
-     */
-    @Nested
-    class QueryConstructorValid {
-        //Test valid IDs (16 bit unsigned int)
-        @ParameterizedTest(name = "ID = {0}")
-        @ValueSource(ints = {0, 1, 65535, 65280, 32768, 34952, 34824})
-        void constIdTestValid(int id){
-            Message q;
-            try {
-                q = new Query(id, ".");
-                assertEquals(id, q.getID());
-            } catch (ValidationException e) {
-                assert(false);
+    class QueryConstructorTests {
+        /**
+         * Query constructor SDNS ID tests (valid and invalid)
+         */
+        @Nested
+        class QueryConstructorIDTests extends SdnsIDTestFactory {
+            /**
+             * Factory method for calling the appropriate function you want to test for SDNS ID validity
+             *
+             * @param id id to test
+             * @return the result of a getID on the respective object
+             * @throws ValidationException if invalid SDNS ID
+             */
+            @Override
+            protected int setGetID(int id) throws ValidationException {
+                Message q = new Query(id, ".");
+                return q.getID();
             }
         }
 
-        //Valid queries (domain name tests)
-        @ParameterizedTest(name = "Query = {0}")
-        @ValueSource(strings = {"a23456789012345678901234567890123456789012345678901234567890123.",
-                "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
-                        "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
-                        "a234567890.",//255
-                "foo.", "foo.com.", "f0-9.c0m.", "google.com.", "www.baylor.edu.", "f0.c-0.", ".", "f-0.", "f-0a."
-        })
-        void constQueryTestValue(String query){
-            Message q;
-            try {
-                q = new Query(0, query);
-                assertEquals(query, q.getQuery());
-            } catch (ValidationException e) {
-                assert(false);
+        /**
+         * Query constructor query tests (valid and invalid)
+         */
+        @Nested
+        class QueryConstructorQueryTests extends DomainNameTestFactory {
+            /**
+             * Factory method for calling the appropriate function you want to test for domain name validity
+             *
+             * @param dm domain name to test
+             * @return the result of a getDM on the respective object
+             * @throws ValidationException if invalid domain name
+             */
+            @Override
+            protected String setGetDomainName(String dm) throws ValidationException {
+                Message q = new Query(0, dm);
+                return q.getQuery();
+            }
+
+            /**
+             * Allows the concrete class to specify which exception it wants to be thrown when a
+             * null string is passed to the function
+             *
+             * @return class to throw
+             */
+            @Override
+            protected Class<? extends Throwable> getNullThrowableType() {
+                return ValidationException.class;
             }
         }
     }
@@ -105,164 +86,49 @@ class QueryTest {
     }
 
     /**
-     * Query equals() basic tests
+     * Query equals() and hashcode() tests
      */
     @Nested
-    class Equals {
-        //basic equal test
-        @Test
-        @DisplayName("Equals test")
-        void equality1(){
-            Query u1, u2;
-
-            try {
-                u1 = new Query(0, "foo.");
-                u2 = new Query(0, "foo.");
-
-                assertTrue(u1.equals(u2));
-                assertTrue(u2.equals(u1));
-            } catch (ValidationException e) {
-                assert(false);
-            }
+    class EqualsAndHashCode extends EqualsAndHashCodeTestFactory<Query> {
+        /**
+         * Factory method for generating a default object to test for (in)equality
+         *
+         * @return the default object for this class
+         */
+        @Override
+        protected Query getDefaultObject0() throws ValidationException {
+            return new Query(123, "good.com.");
         }
 
-        //not not equal based on presumed testing from professor
-        @Test
-        @DisplayName("Equals tests not not equals")
-        void equality2(){
-            Query u1, u2;
-
-            try {
-                u1 = new Query(123, "good.com.");
-                u2 = new Query(123, "good.com.");
-
-                assertFalse(!u1.equals(u2));
-                assertFalse(!u2.equals(u1));
-            } catch (ValidationException e) {
-                assert(false);
-            }
+        /**
+         * Factory method for generating a second object to test for (in)equality
+         *
+         * @return the default object for this class
+         */
+        @Override
+        protected Query getDefaultObject1() throws ValidationException {
+            return new Query(123, "good.com.q.");
         }
 
-        //not equal query
-        @Test
-        @DisplayName("Equals tests not equals")
-        void equality3(){
-            Query u1, u2;
-
-            try {
-                u1 = new Query(123, "good.com.");
-                u2 = new Query(123, "good.com.q.");
-
-                assertFalse(u1.equals(u2));
-                assertFalse(u2.equals(u1));
-            } catch (ValidationException e) {
-                assert(false);
-            }
+        /**
+         * Factory method for generating a third object to test for (in)equality
+         *
+         * @return the default object for this class
+         */
+        @Override
+        protected Query getDefaultObject2() throws ValidationException {
+            return new Query(379, "good.com.");//this makes 0000 0000 0111 1011 into 0000 0001 0111 1011
         }
 
-        //not equal id
-        @Test
-        @DisplayName("Equals tests not equals")
-        void equality4(){
-            Query u1, u2;
-
-            try {
-                u1 = new Query(123, "good.com.");
-                u2 = new Query(379, "good.com.");//this makes 0000 0000 0111 1011 into 0000 0001 0111 1011
-
-                assertFalse(u1.equals(u2));
-                assertFalse(u2.equals(u1));
-            } catch (ValidationException e) {
-                assert(false);
-            }
-        }
-
-        //not equal classes
-        @Test
-        @DisplayName("Equals tests not same class")
-        void equality5(){
-            Query u1;
-            Response u2;
-
-            try {
-                u1 = new Query(123, "good.com.");
-                u2 = new Response(123, "good.com.");//this makes 0000 0000 0111 1011 into 0000 0001 0111 1011
-
-                assertFalse(u2.equals(u1));
-                assertFalse(u1.equals(u2));
-            } catch (ValidationException e) {
-                assert(false);
-            }
-        }
-    }
-
-    /**
-     * Query hashcode() basic tests
-     */
-    @Nested
-    class HashCode {
-        //basic HashCode test
-        @Test
-        @DisplayName("HashCode test")
-        void hashCode1(){
-            Query u1, u2;
-
-            try {
-                u1 = new Query(0, "foo.");
-                u2 = new Query(0, "foo.");
-
-                assertEquals(u1.hashCode(), u2.hashCode());
-            } catch (ValidationException e) {
-                assert(false);
-            }
-        }
-
-        //Different hashcode test
-        @Test
-        @DisplayName("HashCode test 2")
-        void hashCode2(){
-            Query u1, u2;
-
-            try {
-                u1 = new Query(123, "good.com.");
-                u2 = new Query(123, "good.com.");
-
-                assertEquals(u1.hashCode(), u2.hashCode());
-            } catch (ValidationException e) {
-                assert(false);
-            }
-        }
-
-        //not equal query hashcode
-        @Test
-        @DisplayName("HashCode tests not equal query")
-        void hashCode3(){
-            Query u1, u2;
-
-            try {
-                u1 = new Query(123, "good.com.");
-                u2 = new Query(123, "good.com.q.");
-
-                assertNotEquals(u1.hashCode(), u2.hashCode());
-            } catch (ValidationException e) {
-                assert(false);
-            }
-        }
-
-        //not equal id hashcode
-        @Test
-        @DisplayName("HashCode tests not equal id")
-        void hashCode4(){
-            Query u1, u2;
-
-            try {
-                u1 = new Query(123, "good.com.");
-                u2 = new Query(379, "good.com.");//this makes 0000 0000 0111 1011 into 0000 0001 0111 1011
-
-                assertNotEquals(u1.hashCode(), u2.hashCode());
-            } catch (ValidationException e) {
-                assert(false);
-            }
+        /**
+         * Factory method for generating a SIMILAR object (to default0) of a different type to test for inequality
+         * in types and hashcodes
+         *
+         * @return instantiation of different class object with similar field definitions
+         */
+        @Override
+        protected Response getDifferentTypeObject() throws ValidationException {
+            return new Response(123, "good.com.");
         }
     }
 
