@@ -5,19 +5,19 @@ package sdns.serialization.test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import sdns.serialization.A;
 import sdns.serialization.AAAA;
-import sdns.serialization.ResourceRecord;
 import sdns.serialization.ValidationException;
+import sdns.serialization.test.factories.DomainNameTestFactory;
+import sdns.serialization.test.factories.EqualsAndHashCodeCaseInsensitiveTestFactory;
+import sdns.serialization.test.factories.IPv6TestFactory;
+import sdns.serialization.test.factories.TTLTestFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Harrison Rogers
  */
 class AAAATest {
+    //AAAA type value
     private final long AAAA_TYPE_VALUE = 28L;
 
     /**
@@ -51,6 +52,43 @@ class AAAATest {
      */
     private static Inet6Address getDefault2IPv6() throws UnknownHostException {
         return (Inet6Address)Inet6Address.getByName("FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF");
+    }
+
+
+    /**
+     * Address name setter and getter tests (DONE)
+     */
+    @Nested
+    class IPv6SetterGetter extends IPv6TestFactory {
+        /**
+         * Factory method for calling the appropriate function you want to test for IPv6 validity
+         *
+         * @param ip ip to test
+         * @return the result of a getIP on the respective object
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected Inet6Address setGetIPv6(Inet6Address ip) throws ValidationException {
+            AAAA a = null;
+            try {//shouldn't fail here
+                a = new AAAA(".", 0, getDefault1IPv6());
+            } catch (ValidationException | UnknownHostException e) {
+                fail();
+            }
+            a.setAddress(ip);
+            return a.getAddress();
+        }
+
+        /**
+         * Allows the concrete class to specify which exception it wants to be thrown when a
+         * null IPv6 is passed to the function
+         *
+         * @return class to throw
+         */
+        @Override
+        protected Class<? extends Throwable> getNullThrowableType() {
+            return ValidationException.class;
+        }
     }
 
     /**
@@ -83,93 +121,96 @@ class AAAATest {
         }
     }
 
-
     /**
-     * Constructor error tests (DONE)
+     * Constructor tests (valid and invalid) (DONE)
      */
     @Nested
-    class AAAAConstructorErrors {
-        //ValidationException name tests
-        @ParameterizedTest(name = "Name = {0}")
-        @ValueSource(strings = {"", "asdf", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.⭐.⭕.",
-                "-a.f", "-.", "-",
-                "a234567890123456789012345678901234567890123456789012345678901234.",//64
-                "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
-                        "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
-                        "a2345678901."//256
-        })
-        void constrNameValidationError(String name) {
-            assertThrows(ValidationException.class, () -> new AAAA(name, 0, getDefault0IPv6()));
-        }
+    class AAAAConstructorTests {
+        /**
+         * AAAA constructor query tests (valid and invalid)
+         */
+        @Nested
+        class AAAAConstructorNameTests extends DomainNameTestFactory {
+            /**
+             * Factory method for calling the appropriate function you want to test for domain name validity
+             *
+             * @param dm domain name to test
+             * @return the result of a getDM on the respective object
+             * @throws ValidationException if invalid domain name
+             */
+            @Override
+            protected String setGetDomainName(String dm) throws ValidationException {
+                AAAA a = null;
+                try {
+                    a = new AAAA(dm, 0, getDefault1IPv6());
+                } catch (UnknownHostException e) {
+                    fail();
+                }
+                return a.getName();
+            }
 
-        //Null name test
-        @Test @DisplayName("Name null")
-        void constrNameValidationErrorNull() {
-            assertThrows(ValidationException.class, () -> new AAAA(null, 0, getDefault0IPv6()));
-        }
-
-        //Null IPv4
-        @Test @DisplayName("IPv6 name null ptr")
-        void constrIPv4NullPtr() {
-            assertThrows(ValidationException.class, () -> new AAAA(".", 0, null));
-        }
-
-        //ValidationException TTL tests
-        @ParameterizedTest(name = "TTL = {0}")
-        @ValueSource(ints = {-1, -2147483648})
-        void constTTLValidationError(int ttl){
-            assertThrows(ValidationException.class, () -> new AAAA(".", ttl, getDefault0IPv6()));
-        }
-    }
-
-    /**
-     * Valid constructor tests
-     */
-    @Nested
-    class AAAAConstructorValid {
-        //Constructor name tests VALID
-        @ParameterizedTest(name = "Name = {0}")
-        @ValueSource(strings = {"a23456789012345678901234567890123456789012345678901234567890123.",
-                "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
-                        "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
-                        "a234567890.",//255
-                "foo.", "foo.com.", "f0-9.c0m.", "google.com.", "www.baylor.edu.", "f0.c-0.", ".", "f-0.", "f-0a."
-        })
-        void constrNameValid(String name) {
-            AAAA a;
-            try {
-                a = new AAAA(name, 0, getDefault1IPv6());
-                assertEquals(name, a.getName());
-            } catch(Exception e){
-                assert(false);
+            /**
+             * Allows the concrete class to specify which exception it wants to be thrown when a
+             * null string is passed to the function
+             *
+             * @return class to throw
+             */
+            @Override
+            protected Class<? extends Throwable> getNullThrowableType() {
+                return ValidationException.class;
             }
         }
 
-        //Constructor canonical name tests VALID
-        @ParameterizedTest(name = "IPv6 Name = {0}")
-        @ValueSource(strings = {"0000:0000:0000:0000:0000:0000:0000:0000", "0123:4567:89AB:CDEF:0123:4567:89AB:CDEF",
-                "FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF"})
-        void constrCanNameValid(String name) {
-            AAAA a;
-            try {
-                Inet6Address n = (Inet6Address)Inet6Address.getByName(name);
-                a = new AAAA(".", 0, n);
-                assertEquals(n, a.getAddress());
-            } catch(Exception e){
-                assert(false);
+        /**
+         * AAAA constructor IPv6 tests
+         */
+        @Nested
+        class AAAAConstructorIPv6Tests extends IPv6TestFactory {
+            /**
+             * Factory method for calling the appropriate function you want to test for IPv6 validity
+             * @param ip ip to test
+             * @return the result of a getIP on the respective object
+             * @throws ValidationException if invalid object
+             */
+            @Override
+            protected Inet6Address setGetIPv6(Inet6Address ip) throws ValidationException {
+                AAAA a = new AAAA(".", 0, ip);
+                return a.getAddress();
+            }
+
+            /**
+             * Allows the concrete class to specify which exception it wants to be thrown when a
+             * null IPv6 is passed to the function
+             *
+             * @return class to throw
+             */
+            @Override
+            protected Class<? extends Throwable> getNullThrowableType() {
+                return ValidationException.class;
             }
         }
 
-        //Constructor TTL tests
-        @ParameterizedTest(name = "TTL = {0}")
-        @ValueSource(ints = {0, 1, 2147483647})
-        void constTTLValid(int ttl){
-            AAAA a;
-            try {
-                a = new AAAA(".", ttl, getDefault2IPv6());
-                assertEquals(ttl, a.getTTL());
-            } catch(Exception e){
-                assert(false);
+        /**
+         * AAAA constructor TTL tests
+         */
+        @Nested
+        class AAAAConstructorTTLTests extends TTLTestFactory {
+            /**
+             * Factory method for calling the appropriate function you want to test for TTL validity
+             *
+             * @param ttl ttl to test
+             * @return the result of a getTTL on the respective object
+             * @throws ValidationException if invalid object
+             */
+            @Override
+            protected int setGetTTL(int ttl) throws ValidationException {
+                AAAA a = null;
+                try {
+                    a = new AAAA(".", ttl, getDefault2IPv6());
+                } catch (UnknownHostException e) {
+                    fail();
+                }
+                return a.getTTL();
             }
         }
     }
@@ -274,117 +315,132 @@ class AAAATest {
     }
 
     /**
-     * Equals and hash code testing
+     * Equals and hash code testing (DONE)
      */
     @Nested
-    class EqualsAndHashCode {
-        //basic equal test
-        @Test @DisplayName("Equals test")
-        void equality1(){
-            ResourceRecord u1, u2;
-
+    class EqualsAndHashCode extends EqualsAndHashCodeCaseInsensitiveTestFactory<AAAA> {
+        /**
+         * Factory method for generating the first same object as getDefaultObject0 but with a different case
+         * to test for ignore case equality
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected AAAA getDefaultObjectDifferentCase1() throws ValidationException {
+            AAAA a = null;
             try {
-                u1 = new AAAA(".", 0, getDefault0IPv6());
-                u2 = new AAAA(".", 0, getDefault0IPv6());
-
-                assertTrue(u1.equals(u2));
-                assertTrue(u2.equals(u1));
-            } catch (ValidationException | UnknownHostException e) {
-                assert(false);
+                a = new AAAA("GOOD.COM.", 123, getDefault0IPv6());
+            } catch (UnknownHostException e) {
+                fail();
             }
+            return a;
         }
 
-        //not equal canonical name
-        @Test @DisplayName("Equals tests not equals")
-        void equality2(){
-            ResourceRecord u1, u2;
-
+        /**
+         * Factory method for generating a default object to test for (in)equality
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected AAAA getDefaultObject0() throws ValidationException {
+            AAAA a = null;
             try {
-                u1 = new AAAA(".", 123, (Inet6Address)Inet6Address.getByName("0000:0000:0000:0000:0000:0000:0000:0000"));
-                u2 = new AAAA(".", 123, (Inet6Address)Inet6Address.getByName("0001:0000:0000:0000:0000:0000:0000:0000"));
-
-                assertFalse(u1.equals(u2));
-                assertFalse(u2.equals(u1));
-            } catch (ValidationException | UnknownHostException e) {
-                assert(false);
+                a = new AAAA("good.com.", 123, getDefault1IPv6());
+            } catch (UnknownHostException e) {
+                fail();
             }
+            return a;
         }
 
-        //not equal id
-        @Test @DisplayName("Equals tests not equals")
-        void equality3(){
-            ResourceRecord u1, u2;
-
+        /**
+         * Factory method for generating a second object to test for (in)equality
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected AAAA getDefaultObject1() throws ValidationException {
+            AAAA a = null;
             try {
-                u1 = new AAAA(".", 123, getDefault1IPv6());
-                u2 = new AAAA(".", 379, getDefault1IPv6());//this makes 0000 0000 0111 1011 into 0000 0001 0111 1011
-
-                assertFalse(u1.equals(u2));
-                assertFalse(u2.equals(u1));
-            } catch (ValidationException | UnknownHostException e) {
-                assert(false);
+                a = new AAAA("good.com.q.", 123, getDefault1IPv6());
+            } catch (UnknownHostException e) {
+                fail();
             }
+            return a;
         }
 
-        //not equal nmae
-        @Test @DisplayName("Equals tests not equals")
-        void equality4(){
-            ResourceRecord u1, u2;
-
+        /**
+         * Factory method for generating a third object to test for (in)equality
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected AAAA getDefaultObject2() throws ValidationException {
+            AAAA a = null;
             try {
-                u1 = new AAAA("good.com.", 123, getDefault1IPv6());
-                u2 = new AAAA("good.com.q.", 123, getDefault1IPv6());
-
-                assertFalse(u1.equals(u2));
-                assertFalse(u2.equals(u1));
-            } catch (ValidationException | UnknownHostException e) {
-                assert(false);
+                a = new AAAA("good.com.", 379, getDefault1IPv6());
+            } catch (UnknownHostException e) {
+                fail();
             }
+            return a;
         }
 
-        //hashcode equals
-        @Test @DisplayName("Hashcode basic")
-        void hash1(){
-            ResourceRecord u1, u2;
-
+        /**
+         * Factory method for generating a fourth object to test for (in)equality
+         * Defaults to getDefaultObject0
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected AAAA getDefaultObject3() throws ValidationException {
+            AAAA a = null;
             try {
-                u1 = new AAAA("good.com.", 123, getDefault0IPv6());
-                u2 = new AAAA("good.com.", 123, getDefault0IPv6());
-
-                assertEquals(u1.hashCode(), u2.hashCode());
-            } catch (ValidationException | UnknownHostException e) {
-                assert(false);
+                a = new AAAA(".", 123, (Inet6Address)Inet6Address.getByName("0000:0000:0000:0000:0000:0000:0000:0000"));
+            } catch (UnknownHostException e) {
+                fail();
             }
+            return a;
         }
 
-        //hashcode not equals
-        @Test @DisplayName("Hashcode not equals")
-        void hash2(){
-            ResourceRecord u1, u2;
-
+        /**
+         * Factory method for generating a fifth object to test for (in)equality
+         * RESERVED FOR COMPLEX EQUALS
+         * Defaults to getDefaultObject1
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected AAAA getDefaultObject4() throws ValidationException {
+            AAAA a = null;
             try {
-                u1 = new AAAA("good.com.", 123, getDefault0IPv6());
-                u2 = new AAAA("good.com.", 124, getDefault0IPv6());
-
-                assertNotEquals(u1.hashCode(), u2.hashCode());
-            } catch (ValidationException | UnknownHostException e) {
-                assert(false);
+                a = new AAAA(".", 123, (Inet6Address)Inet6Address.getByName("0001:0000:0000:0000:0000:0000:0000:0000"));
+            } catch (UnknownHostException e) {
+                fail();
             }
+            return a;
         }
 
-        //hashcode different types
-        @Test @DisplayName("Hashcode not equals")
-        void hash3(){
-            ResourceRecord u1, u2;
-
+        /**
+         * Factory method for generating a SIMILAR object (to default0) of a different type to test for inequality
+         * in types and hashcodes
+         *
+         * @return instantiation of different class object with similar field definitions
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected A getDifferentTypeObject() throws ValidationException {
+            A a = null;
             try {
-                u1 = new A("good.com.", 123, (Inet4Address) Inet4Address.getByName("0.0.0.0"));
-                u2 = new AAAA("good.com.", 123, getDefault1IPv6());
-
-                assertNotEquals(u1.hashCode(), u2.hashCode());
-            } catch (ValidationException | UnknownHostException e) {
-                assert(false);
+                a = new A("good.com.", 123, (Inet4Address) Inet4Address.getByName("0.0.0.0"));
+            } catch (UnknownHostException e) {
+                fail();
             }
+            return a;
         }
     }
 }

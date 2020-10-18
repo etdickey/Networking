@@ -8,6 +8,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import sdns.serialization.*;
+import sdns.serialization.test.factories.DomainNameTestFactory;
+import sdns.serialization.test.factories.EqualsAndHashCodeCaseInsensitiveTestFactory;
+import sdns.serialization.test.factories.TTLTestFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -19,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Harrison Rogers
  */
 class CNameTest {
+    //CName type value
     private final long CN_TYPE_VALUE = 5L;
 
     /**
@@ -36,7 +40,7 @@ class CNameTest {
     }
 
     /**
-     * Test to string
+     * Test to string (DONE)
      */
     @Test
     void testToString() {
@@ -51,165 +55,123 @@ class CNameTest {
         }
     }
 
-    //Canonical name setter and getter tests (DONE)
-    //Name: -- these tests apply to all domain name field tests
-    //  Each label must start with a letter, end with a letter or digit, and have as interior characters only letters
-    //    (A-Z and a-z), digits (0-9), and hypen (-).
-    //  A name with a single, empty label (".") is acceptable
+    /**
+     * Canonical name setter and getter tests (DONE)
+     */
     @Nested
-    class CanonicalNameSetterGetter {
-        //set canonical name tests ERROR
-        @ParameterizedTest(name = "Canonical name = {0}")
-        @ValueSource(strings = {"", "asdf", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.⭐.⭕.",
-                "-a.f", "-.", "-",
-                "a234567890123456789012345678901234567890123456789012345678901234.",//64
-                "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
-                        "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
-                        "a2345678901."//256
-        })
-        void setCanNameValidationException(String name) {
-            CName cn;
-            try {
+    class CanonicalNameSetterGetter extends DomainNameTestFactory {
+        /**
+         * Factory method for calling the appropriate function you want to test for domain name validity
+         *
+         * @param dm domain name to test
+         * @return the result of a getDM on the respective object
+         * @throws ValidationException if invalid domain name
+         */
+        @Override
+        protected String setGetDomainName(String dm) throws ValidationException {
+            CName cn = null;
+            try {//shouldn't fail here
                 cn = new CName(".", 0, ".");
-                assertThrows(ValidationException.class, () -> cn.setCanonicalName(name));
-            } catch(Exception e){
-                assert(false);
+            } catch(ValidationException e){
+                fail();
             }
-        }
-        @Test
-        void setCanNameNullPtr() {
-            CName cn;
-            try {
-                cn = new CName(".", 0, ".");
-                assertThrows(ValidationException.class, () -> cn.setCanonicalName(null));
-            } catch(Exception e){
-                assert(false);
-            }
+            cn.setCanonicalName(dm);
+            return cn.getCanonicalName();
         }
 
-        //set canonical name tests VALID
-        @ParameterizedTest(name = "Canonical name = {0}")
-        @ValueSource(strings = {"a23456789012345678901234567890123456789012345678901234567890123.",//63
-                "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
-                        "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
-                        "a234567890.",//255
-                "foo.", "foo.com.", "f0-9.c0m.", "google.com.", "www.baylor.edu.", "f0.c-0.", ".", "f-0.", "f-0a."
-        })
-        void setAndGetCanNameValid(String name) {
-            CName cn;
-            try {
-                cn = new CName(".", 0, ".");
-                cn.setCanonicalName(name);
-                assertEquals(name, cn.getCanonicalName());
-            } catch(Exception e){
-                assert(false);
-            }
-        }
-    }
-
-    //Constructor error tests (DONE)
-    //Name: -- these tests apply to all domain name field tests
-    //  Each label must start with a letter, end with a letter or digit, and have as interior characters only letters
-    //    (A-Z and a-z), digits (0-9), and hypen (-).
-    //  A name with a single, empty label (".") is acceptable
-    @Nested
-    class CNameConstructorErrorTests {
-        //ValidationException name tests
-        @ParameterizedTest(name = "Name = {0}")
-        @ValueSource(strings = {"", "asdf", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.⭐.⭕.",
-                "-a.f", "-.", "-",
-                "a234567890123456789012345678901234567890123456789012345678901234.",//64
-                "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
-                        "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
-                        "a2345678901."//256
-        })
-        void constrNameValidationError(String name) {
-            assertThrows(ValidationException.class, () -> new CName(name, 0, "."));
-        }
-        @Test
-        @DisplayName("Canonical name ptr")
-        void constrNameValidationErrorNull() {
-            assertThrows(ValidationException.class, () -> new CName(null, 0, "."));
-        }
-
-        //ValidationException canonical name tests
-        @ParameterizedTest(name = "Canonical Name = {0}")
-        @ValueSource(strings = {"", "asdf", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.⭐.⭕.",
-                "-a.f", "-.", "-",
-                "a234567890123456789012345678901234567890123456789012345678901234.",//64
-                "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
-                        "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
-                        "a2345678901."//256
-        })
-        void constrCanNameValidationError(String name) {
-            assertThrows(ValidationException.class, () -> new CName(".", 0, name));
-        }
-        @Test
-        @DisplayName("Canonical name null ptr")
-        void constrCanNameNullPtr() {
-            assertThrows(ValidationException.class, () -> new CName(".", 0, null));
-        }
-
-        //ValidationException TTL tests
-        @ParameterizedTest(name = "TTL = {0}")
-        @ValueSource(ints = {-1, -2147483648})
-        void constTTLValidationError(int ttl){
-            assertThrows(ValidationException.class, () -> new CName(".", ttl, "."));
+        /**
+         * Allows the concrete class to specify which exception it wants to be thrown when a
+         * null string is passed to the function
+         *
+         * @return class to throw
+         */
+        @Override
+        protected Class<? extends Throwable> getNullThrowableType() {
+            return ValidationException.class;
         }
     }
 
     /**
-     * Constructor valid tests (DONE)
+     * Constructor tests (valid and invalid) (DONE)
      */
     @Nested
     class CNameConstructorValidTests {
-        //Constructor name tests VALID
-        @ParameterizedTest(name = "Name = {0}")
-        @ValueSource(strings = {"a23456789012345678901234567890123456789012345678901234567890123.",
-                "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
-                        "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
-                        "a234567890.",//255
-                "foo.", "foo.com.", "f0-9.c0m.", "google.com.", "www.baylor.edu.", "f0.c-0.", ".", "f-0.", "f-0a."
-        })
-        void constrNameValid(String name) {
-            CName cn;
-            try {
-                cn = new CName(name, 0, ".");
-                assertEquals(name, cn.getName());
-            } catch(Exception e){
-                assert(false);
+        /**
+         * CName constructor name tests
+         */
+        @Nested
+        class CNameConstructorNameTests extends DomainNameTestFactory {
+            /**
+             * Factory method for calling the appropriate function you want to test for domain name validity
+             *
+             * @param dm domain name to test
+             * @return the result of a getDM on the respective object
+             * @throws ValidationException if invalid domain name
+             */
+            @Override
+            protected String setGetDomainName(String dm) throws ValidationException {
+                CName cn = new CName(dm, 0, ".");
+                return cn.getName();
+            }
+
+            /**
+             * Allows the concrete class to specify which exception it wants to be thrown when a
+             * null string is passed to the function
+             *
+             * @return class to throw
+             */
+            @Override
+            protected Class<? extends Throwable> getNullThrowableType() {
+                return ValidationException.class;
             }
         }
 
-        //Constructor canonical name tests VALID
-        @ParameterizedTest(name = "Canonical Name = {0}")
-        @ValueSource(strings = {"a23456789012345678901234567890123456789012345678901234567890123.",
-                "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
-                        "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
-                        "a234567890.",//255
-                "foo.", "foo.com.", "f0-9.c0m.", "google.com.", "www.baylor.edu.", "f0.c-0.", ".", "f-0.", "f-0a."
-        })
-        void constrCanNameValid(String name) {
-            CName cn;
-            try {
-                cn = new CName(".", 0, name);
-                assertEquals(name, cn.getCanonicalName());
-            } catch(Exception e){
-                assert(false);
+        /**
+         * CName constructor canonical name tests
+         */
+        @Nested
+        class CNameConstructorCanonicalNameTests extends DomainNameTestFactory {
+            /**
+             * Factory method for calling the appropriate function you want to test for domain name validity
+             *
+             * @param dm domain name to test
+             * @return the result of a getDM on the respective object
+             * @throws ValidationException if invalid domain name
+             */
+            @Override
+            protected String setGetDomainName(String dm) throws ValidationException {
+                CName cn = new CName(".", 0, dm);
+                return cn.getCanonicalName();
+            }
+
+            /**
+             * Allows the concrete class to specify which exception it wants to be thrown when a
+             * null string is passed to the function
+             *
+             * @return class to throw
+             */
+            @Override
+            protected Class<? extends Throwable> getNullThrowableType() {
+                return ValidationException.class;
             }
         }
 
-        //Constructor TTL tests
-        @ParameterizedTest(name = "TTL = {0}")
-        @ValueSource(ints = {0, 1, 2147483647})
-        void constTTLValid(int ttl){
-            CName cn;
-            //NS
-            try {
-                cn = new CName(".", ttl, ".");
-                assertEquals(ttl, cn.getTTL());
-            } catch(Exception e){
-                assert(false);
+        /**
+         * CName constructor TTL tests
+         */
+        @Nested
+        class CNameConstructorTTLTests extends TTLTestFactory {
+            /**
+             * Factory method for calling the appropriate function you want to test for TTL validity
+             *
+             * @param ttl ttl to test
+             * @return the result of a getTTL on the respective object
+             * @throws ValidationException if invalid object
+             */
+            @Override
+            protected int setGetTTL(int ttl) throws ValidationException {
+                CName cn = new CName(".", ttl, ".");
+                return cn.getTTL();
             }
         }
     }
@@ -280,117 +242,103 @@ class CNameTest {
     }
 
     /**
-     * Equals and hash code testing
+     * Equals and hash code testing (DONE)
      */
     @Nested
-    class EqualsAndHashCode {
-        //basic equal test
-        @Test @DisplayName("Equals test")
-        void equality1(){
-            ResourceRecord u1, u2;
-
-            try {
-                u1 = new CName(".", 0, "foo.");
-                u2 = new CName(".", 0, "foo.");
-
-                assertTrue(u1.equals(u2));
-                assertTrue(u2.equals(u1));
-            } catch (ValidationException e) {
-                assert(false);
-            }
+    class EqualsAndHashCode extends EqualsAndHashCodeCaseInsensitiveTestFactory<CName> {
+        /**
+         * Factory method for generating the first same object as getDefaultObject0 but with a different case
+         * to test for ignore case equality
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected CName getDefaultObjectDifferentCase1() throws ValidationException {
+            return new CName("GOOD.COM.", 0, "foo.a1.");
         }
 
-        //not equal canonical name
-        @Test @DisplayName("Equals tests not equals")
-        void equality2(){
-            ResourceRecord u1, u2;
-
-            try {
-                u1 = new CName(".", 123, "good.com.");
-                u2 = new CName(".", 123, "good.com.q.");
-
-                assertFalse(u1.equals(u2));
-                assertFalse(u2.equals(u1));
-            } catch (ValidationException e) {
-                assert(false);
-            }
+        /**
+         * Factory method for generating the second same object as getDefaultObject0 but with a different case
+         * to test for ignore case equality
+         * Defaults to getDefaultObjectDifferentCase0 (if only 1 field to test)
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected CName getDefaultObjectDifferentCase2() throws ValidationException {
+            return new CName("good.com.", 0, "FOO.A1.");
         }
 
-        //not equal id
-        @Test @DisplayName("Equals tests not equals")
-        void equality3(){
-            ResourceRecord u1, u2;
-
-            try {
-                u1 = new CName(".", 123, "good.com.");
-                u2 = new CName(".", 379, "good.com.");//this makes 0000 0000 0111 1011 into 0000 0001 0111 1011
-
-                assertFalse(u1.equals(u2));
-                assertFalse(u2.equals(u1));
-            } catch (ValidationException e) {
-                assert(false);
-            }
+        /**
+         * Factory method for generating a default object to test for (in)equality
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected CName getDefaultObject0() throws ValidationException {
+            return new CName("good.com.", 0, "foo.a1.");
         }
 
-        //not equal nmae
-        @Test @DisplayName("Equals tests not equals")
-        void equality4(){
-            ResourceRecord u1, u2;
-
-            try {
-                u1 = new CName("good.com.", 123, "good.com.");
-                u2 = new CName("good.com.q.", 123, "good.com.");
-
-                assertFalse(u1.equals(u2));
-                assertFalse(u2.equals(u1));
-            } catch (ValidationException e) {
-                assert(false);
-            }
+        /**
+         * Factory method for generating a second object to test for (in)equality
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected CName getDefaultObject1() throws ValidationException {
+            return new CName("good.com.q.", 0, "foo.a1.");
         }
 
-        //hashcode equals
-        @Test @DisplayName("Hashcode basic")
-        void hash1(){
-            ResourceRecord u1, u2;
-
-            try {
-                u1 = new CName("good.com.", 123, "good.com.");
-                u2 = new CName("good.com.", 123, "good.com.");
-
-                assertEquals(u1.hashCode(), u2.hashCode());
-            } catch (ValidationException e) {
-                assert(false);
-            }
+        /**
+         * Factory method for generating a third object to test for (in)equality
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected CName getDefaultObject2() throws ValidationException {
+            return new CName("good.com.", 0, "foo.a1.q.");
         }
 
-        //hashcode not equals
-        @Test @DisplayName("Hashcode not equals")
-        void hash2(){
-            ResourceRecord u1, u2;
-
-            try {
-                u1 = new CName("good.com.", 123, "good.com.");
-                u2 = new CName("good.com.", 124, "good.com.");
-
-                assertNotEquals(u1.hashCode(), u2.hashCode());
-            } catch (ValidationException e) {
-                assert(false);
-            }
+        /**
+         * Factory method for generating a fourth object to test for (in)equality
+         * Defaults to getDefaultObject0
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected CName getDefaultObject3() throws ValidationException {
+            return new CName("good.com.", 123, "foo.a1.");
         }
 
-        //hashcode different types
-        @Test @DisplayName("Hashcode not equals")
-        void hash3(){
-            ResourceRecord u1, u2;
+        /**
+         * Factory method for generating a fifth object to test for (in)equality
+         * RESERVED FOR COMPLEX EQUALS
+         * Defaults to getDefaultObject1
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected CName getDefaultObject4() throws ValidationException {
+            return new CName("good.com.", 379, "foo.a1.");
+        }
 
-            try {
-                u1 = new CName("good.com.", 123, "good.com.");
-                u2 = new NS("good.com.", 123, "good.com.");
-
-                assertNotEquals(u1.hashCode(), u2.hashCode());
-            } catch (ValidationException e) {
-                assert(false);
-            }
+        /**
+         * Factory method for generating a SIMILAR object (to default0) of a different type to test for inequality
+         * in types and hashcodes
+         *
+         * @return instantiation of different class object with similar field definitions
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected NS getDifferentTypeObject() throws ValidationException {
+            return new NS("good.com.", 0, "foo.a1.");
         }
     }
 }

@@ -5,15 +5,17 @@ package sdns.serialization.test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import sdns.serialization.*;
+import sdns.serialization.test.factories.DomainNameTestFactory;
+import sdns.serialization.test.factories.EqualsAndHashCodeCaseInsensitiveTestFactory;
+import sdns.serialization.test.factories.IPv4TestFactory;
+import sdns.serialization.test.factories.TTLTestFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
 /**
@@ -21,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Harrison Rogers
  */
 class ATest {
+    //A type value
     private final long A_TYPE_VALUE = 1L;
 
     /**
@@ -38,41 +41,43 @@ class ATest {
     }
 
     /**
-     * Address name setter and getter tests
+     * Address name setter and getter tests (DONE)
      */
     @Nested
-    class IPv4SetterGetter {
-        //set ipv4 name tests ERROR
-        @Test
-        @DisplayName("Null ipv4")
-        void setIPv4NullPtr() {
-            A a;
+    class IPv4SetterGetter extends IPv4TestFactory {
+        /**
+         * Factory method for calling the appropriate function you want to test for IPv4 validity
+         *
+         * @param ip ip to test
+         * @return the result of a getIP on the respective object
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected Inet4Address setGetIPv4(Inet4Address ip) throws ValidationException {
+            A a = null;
             try {
                 a = new A(".", 0, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
-                assertThrows(ValidationException.class, () -> a.setAddress(null));
-            } catch(Exception e){
-                assert(false);
+            } catch (UnknownHostException e) {
+                fail();
             }
+            a.setAddress(ip);
+            return a.getAddress();
         }
 
-        //set ipv4 tests VALID
-        @ParameterizedTest(name = "IPv4 Name = {0}")
-        @ValueSource(strings = {"0.0.0.0", "1.1.1.1", "255.255.255.255"})
-        void setAndGetIPv4Valid(String name) {
-            A a;
-            try {
-                Inet4Address n = (Inet4Address)Inet4Address.getByName(name);
-                a = new A(".", 0, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
-                a.setAddress(n);
-                assertEquals(n, a.getAddress());
-            } catch(Exception e){
-                assert(false);
-            }
+        /**
+         * Allows the concrete class to specify which exception it wants to be thrown when a
+         * null IPv4 is passed to the function
+         *
+         * @return class to throw
+         */
+        @Override
+        protected Class<? extends Throwable> getNullThrowableType() {
+            return ValidationException.class;
         }
     }
 
     /**
-     * To string tests
+     * To string tests (DONE)
      */
     @Test
     void testToString() {
@@ -88,92 +93,96 @@ class ATest {
     }
 
     /**
-     * Constructor error tests
-     */
-    @Nested
-    class AConstructorErrors {
-        //ValidationException name tests
-        @ParameterizedTest(name = "Name = {0}")
-        @ValueSource(strings = {"", "asdf", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.⭐.⭕.",
-                "-a.f", "-.", "-",
-                "a234567890123456789012345678901234567890123456789012345678901234.",//64
-                "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
-                        "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
-                        "a2345678901."//256
-        })
-        void constrNameValidationError(String name) {
-            assertThrows(ValidationException.class, () -> new A(name, 0, (Inet4Address)Inet4Address.getByName("0.0.0.0")));
-        }
-
-        //Null name test
-        @Test
-        @DisplayName("Name null")
-        void constrNameValidationErrorNull() {
-            assertThrows(ValidationException.class, () -> new A(null, 0, (Inet4Address)Inet4Address.getByName("0.0.0.0")));
-        }
-
-        //Null IPv4
-        @Test
-        @DisplayName("IPv4 name null ptr")
-        void constrIPv4NullPtr() {
-            assertThrows(ValidationException.class, () -> new A(".", 0, null));
-        }
-
-        //ValidationException TTL tests
-        @ParameterizedTest(name = "TTL = {0}")
-        @ValueSource(ints = {-1, -2147483648})
-        void constTTLValidationError(int ttl){
-            assertThrows(ValidationException.class, () -> new A(".", ttl, (Inet4Address)Inet4Address.getByName("0.0.0.0")));
-        }
-    }
-
-    /**
-     * Valid constructor tests
+     * Constructor tests (valid and invalid) (DONE)
      */
     @Nested
     class AConstructorValid {
-        //Constructor name tests VALID
-        @ParameterizedTest(name = "Name = {0}")
-        @ValueSource(strings = {"a23456789012345678901234567890123456789012345678901234567890123.",
-                "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
-                        "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
-                        "a234567890.",//255
-                "foo.", "foo.com.", "f0-9.c0m.", "google.com.", "www.baylor.edu.", "f0.c-0.", ".", "f-0.", "f-0a."
-        })
-        void constrNameValid(String name) {
-            A a;
-            try {
-                a = new A(name, 0, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
-                assertEquals(name, a.getName());
-            } catch(Exception e){
-                assert(false);
+        /**
+         * A constructor name tests (valid and invalid)
+         */
+        @Nested
+        class AConstructorNameTests extends DomainNameTestFactory {
+            /**
+             * Factory method for calling the appropriate function you want to test for domain name validity
+             *
+             * @param dm domain name to test
+             * @return the result of a getDM on the respective object
+             * @throws ValidationException if invalid domain name
+             */
+            @Override
+            protected String setGetDomainName(String dm) throws ValidationException {
+                A a = null;
+                try {
+                    a = new A(dm, 0, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
+                } catch (UnknownHostException e) {
+                    fail();
+                }
+                return a.getName();
+            }
+
+            /**
+             * Allows the concrete class to specify which exception it wants to be thrown when a
+             * null string is passed to the function
+             *
+             * @return class to throw
+             */
+            @Override
+            protected Class<? extends Throwable> getNullThrowableType() {
+                return ValidationException.class;
             }
         }
 
-        //Constructor canonical name tests VALID
-        @ParameterizedTest(name = "IPv4 Name = {0}")
-        @ValueSource(strings = {"0.0.0.0", "1.1.1.1", "255.255.255.255"})
-        void constrCanNameValid(String name) {
-            A a;
-            try {
-                Inet4Address n = (Inet4Address)Inet4Address.getByName(name);
-                a = new A(".", 0, n);
-                assertEquals(n, a.getAddress());
-            } catch(Exception e){
-                assert(false);
+        /**
+         * A constructor IPv4 tests
+         */
+        @Nested
+        class AConstructorIPv4Tests extends IPv4TestFactory {
+            /**
+             * Factory method for calling the appropriate function you want to test for IPv4 validity
+             *
+             * @param ip ip to test
+             * @return the result of a getIP on the respective object
+             * @throws ValidationException if invalid object
+             */
+            @Override
+            protected Inet4Address setGetIPv4(Inet4Address ip) throws ValidationException {
+                A a = new A(".", 0, ip);
+                return a.getAddress();
+            }
+
+            /**
+             * Allows the concrete class to specify which exception it wants to be thrown when a
+             * null IPv4 is passed to the function
+             *
+             * @return class to throw
+             */
+            @Override
+            protected Class<? extends Throwable> getNullThrowableType() {
+                return ValidationException.class;
             }
         }
 
-        //Constructor TTL tests
-        @ParameterizedTest(name = "TTL = {0}")
-        @ValueSource(ints = {0, 1, 2147483647})
-        void constTTLValid(int ttl){
-            A a;
-            try {
-                a = new A(".", ttl, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
-                assertEquals(ttl, a.getTTL());
-            } catch(Exception e){
-                assert(false);
+        /**
+         * A constructor TTL tests
+         */
+        @Nested
+        class AConstructorTTLTests extends TTLTestFactory {
+            /**
+             * Factory method for calling the appropriate function you want to test for TTL validity
+             *
+             * @param ttl ttl to test
+             * @return the result of a getTTL on the respective object
+             * @throws ValidationException if invalid object
+             */
+            @Override
+            protected int setGetTTL(int ttl) throws ValidationException {
+                A a = null;
+                try {
+                    a = new A(".", ttl, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
+                } catch (UnknownHostException e) {
+                    fail();
+                }
+                return a.getTTL();
             }
         }
     }
@@ -275,114 +284,130 @@ class ATest {
      * Equals and hash code testing
      */
     @Nested
-    class EqualsAndHashCode {
-        //basic equal test
-        @Test @DisplayName("Equals test")
-        void equality1(){
-            ResourceRecord u1, u2;
-
+    class EqualsAndHashCode extends EqualsAndHashCodeCaseInsensitiveTestFactory<A> {
+        /**
+         * Factory method for generating the first same object as getDefaultObject0 but with a different case
+         * to test for ignore case equality
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected A getDefaultObjectDifferentCase1() throws ValidationException {
+            A a = null;
             try {
-                u1 = new A(".", 0, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
-                u2 = new A(".", 0, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
-
-                assertTrue(u1.equals(u2));
-                assertTrue(u2.equals(u1));
-            } catch (ValidationException | UnknownHostException e) {
-                assert(false);
+                a = new A("GOOD.COM.", 123, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
+            } catch (UnknownHostException e) {
+                fail();
             }
+            return a;
         }
 
-        //not equal canonical name
-        @Test @DisplayName("Equals tests not equals")
-        void equality2(){
-            ResourceRecord u1, u2;
-
+        /**
+         * Factory method for generating a default object to test for (in)equality
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected A getDefaultObject0() throws ValidationException {
+            A a = null;
             try {
-                u1 = new A(".", 123, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
-                u2 = new A(".", 123, (Inet4Address)Inet4Address.getByName("1.0.0.0"));
-
-                assertFalse(u1.equals(u2));
-                assertFalse(u2.equals(u1));
-            } catch (ValidationException | UnknownHostException e) {
-                assert(false);
+                a = new A("good.com.", 123, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
+            } catch (UnknownHostException e) {
+                fail();
             }
+            return a;
         }
 
-        //not equal id
-        @Test @DisplayName("Equals tests not equals")
-        void equality3(){
-            ResourceRecord u1, u2;
-
+        /**
+         * Factory method for generating a second object to test for (in)equality
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected A getDefaultObject1() throws ValidationException {
+            A a = null;
             try {
-                u1 = new A(".", 123, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
-                u2 = new A(".", 379, (Inet4Address)Inet4Address.getByName("0.0.0.0"));//this makes 0000 0000 0111 1011 into 0000 0001 0111 1011
-
-                assertFalse(u1.equals(u2));
-                assertFalse(u2.equals(u1));
-            } catch (ValidationException | UnknownHostException e) {
-                assert(false);
+                a = new A("good.com.q.", 123, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
+            } catch (UnknownHostException e) {
+                fail();
             }
+            return a;
         }
 
-        //not equal nmae
-        @Test @DisplayName("Equals tests not equals")
-        void equality4(){
-            ResourceRecord u1, u2;
-
+        /**
+         * Factory method for generating a third object to test for (in)equality
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected A getDefaultObject2() throws ValidationException {
+            A a = null;
             try {
-                u1 = new A("good.com.", 123, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
-                u2 = new A("good.com.q.", 123, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
-
-                assertFalse(u1.equals(u2));
-                assertFalse(u2.equals(u1));
-            } catch (ValidationException | UnknownHostException e) {
-                assert(false);
+                a = new A("good.com.", 379, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
+            } catch (UnknownHostException e) {
+                fail();
             }
+            return a;
         }
 
-        //hashcode equals
-        @Test @DisplayName("Hashcode basic")
-        void hash1(){
-            ResourceRecord u1, u2;
-
+        /**
+         * Factory method for generating a fourth object to test for (in)equality
+         * Defaults to getDefaultObject0
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected A getDefaultObject3() throws ValidationException {
+            A a = null;
             try {
-                u1 = new A("good.com.", 123, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
-                u2 = new A("good.com.", 123, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
-
-                assertEquals(u1.hashCode(), u2.hashCode());
-            } catch (ValidationException | UnknownHostException e) {
-                assert(false);
+                a = new A("good.com.", 123, (Inet4Address)Inet4Address.getByName("255.255.255.255"));
+            } catch (UnknownHostException e) {
+                fail();
             }
+            return a;
         }
 
-        //hashcode not equals
-        @Test @DisplayName("Hashcode not equals")
-        void hash2(){
-            ResourceRecord u1, u2;
-
+        /**
+         * Factory method for generating a fifth object to test for (in)equality
+         * RESERVED FOR COMPLEX EQUALS
+         * Defaults to getDefaultObject1
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected A getDefaultObject4() throws ValidationException {
+            A a = null;
             try {
-                u1 = new A("good.com.", 123, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
-                u2 = new A("good.com.", 124, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
-
-                assertNotEquals(u1.hashCode(), u2.hashCode());
-            } catch (ValidationException | UnknownHostException e) {
-                assert(false);
+                a = new A("good.com.", 123, (Inet4Address)Inet4Address.getByName("254.255.255.255"));
+            } catch (UnknownHostException e) {
+                fail();
             }
+            return a;
         }
 
-        //hashcode different types
-        @Test @DisplayName("Hashcode not equals")
-        void hash3(){
-            ResourceRecord u1, u2;
-
+        /**
+         * Factory method for generating a SIMILAR object (to default0) of a different type to test for inequality
+         * in types and hashcodes
+         *
+         * @return instantiation of different class object with similar field definitions
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected AAAA getDifferentTypeObject() throws ValidationException {
+            AAAA a = null;
             try {
-                u1 = new A("good.com.", 123, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
-                u2 = new NS("good.com.", 123, "good.com.");
-
-                assertNotEquals(u1.hashCode(), u2.hashCode());
-            } catch (ValidationException | UnknownHostException e) {
-                assert(false);
+                a = new AAAA("good.com.", 123,
+                        (Inet6Address) Inet6Address.getByName("0000:0000:0000:0000:0000:0000:0000:0000"));
+            } catch (UnknownHostException e) {
+                fail();
             }
+            return a;
         }
     }
 }
