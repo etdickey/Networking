@@ -91,7 +91,7 @@ public class CName extends ResourceRecord {
      * @return type value
      */
     @Override
-    public long getTypeValue() { return CN_TYPE_VALUE; }
+    public int getTypeValue() { return CN_TYPE_VALUE; }
 
     /**
      * Returns a byte array of the rdata for this object.  For internal use only.

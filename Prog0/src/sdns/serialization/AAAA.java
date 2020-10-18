@@ -87,7 +87,7 @@ public class AAAA extends ResourceRecord {
      * @return type value
      */
     @Override
-    public long getTypeValue() { return AAAA_TYPE_VALUE; }
+    public int getTypeValue() { return AAAA_TYPE_VALUE; }
 
     /**
      * Returns a byte array of the rdata for this object.  For internal use only.
