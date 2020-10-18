@@ -6,6 +6,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import sdns.serialization.*;
+import sdns.serialization.test.factories.DomainNameTestFactory;
+import sdns.serialization.test.factories.EqualsAndHashCodeCaseInsensitiveTestFactory;
+import sdns.serialization.test.factories.SdnsIDTestFactory;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -89,11 +92,12 @@ class QueryTest {
      * Query equals() and hashcode() tests
      */
     @Nested
-    class EqualsAndHashCode extends EqualsAndHashCodeTestFactory<Query> {
+    class EqualsAndHashCode extends EqualsAndHashCodeCaseInsensitiveTestFactory<Query> {
         /**
          * Factory method for generating a default object to test for (in)equality
          *
          * @return the default object for this class
+         * @throws ValidationException if invalid object
          */
         @Override
         protected Query getDefaultObject0() throws ValidationException {
@@ -104,6 +108,7 @@ class QueryTest {
          * Factory method for generating a second object to test for (in)equality
          *
          * @return the default object for this class
+         * @throws ValidationException if invalid object
          */
         @Override
         protected Query getDefaultObject1() throws ValidationException {
@@ -114,6 +119,7 @@ class QueryTest {
          * Factory method for generating a third object to test for (in)equality
          *
          * @return the default object for this class
+         * @throws ValidationException if invalid object
          */
         @Override
         protected Query getDefaultObject2() throws ValidationException {
@@ -125,10 +131,23 @@ class QueryTest {
          * in types and hashcodes
          *
          * @return instantiation of different class object with similar field definitions
+         * @throws ValidationException if invalid object
          */
         @Override
         protected Response getDifferentTypeObject() throws ValidationException {
             return new Response(123, "good.com.");
+        }
+
+        /**
+         * Factory method for generating the first same object as getDefaultObject0 but with a different case
+         * to test for ignore case equality
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected Query getDefaultObjectDifferentCase1() throws ValidationException {
+            return new Query(123, "GOOD.COM.");
         }
     }
 

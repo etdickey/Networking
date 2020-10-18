@@ -6,6 +6,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import sdns.serialization.*;
+import sdns.serialization.test.factories.DomainNameTestFactory;
+import sdns.serialization.test.factories.EqualsAndHashCodeCaseInsensitiveTestFactory;
+import sdns.serialization.test.factories.RCodeSetGetAbstractTestFactory;
+import sdns.serialization.test.factories.SdnsIDTestFactory;
 
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
@@ -278,7 +282,7 @@ class ResponseTest {
      * Test get set response code
      */
     @Nested
-    class ResponseGetSetResponseCode extends RCodeSetGetAbstractTest {
+    class ResponseGetSetResponseCode extends RCodeSetGetAbstractTestFactory {
         /**
          * Factory method for calling the appropriate function you want to test for rcode validity
          *
@@ -375,7 +379,7 @@ class ResponseTest {
      * Response equals() and hashcode() tests
      */
     @Nested
-    class EqualsAndHashCode extends EqualsAndHashCodeTestFactory<Response> {
+    class EqualsAndHashCode extends EqualsAndHashCodeCaseInsensitiveTestFactory<Response> {
         //helper setter for complex objects
         void complexEqualsHelper(Response u1, CName cn, CName cn2, NS ns, A a, NS ns1, NS ns2) throws ValidationException {
             u1.addNameServer(ns1);
@@ -394,6 +398,7 @@ class ResponseTest {
          * Factory method for generating a default object to test for (in)equality
          *
          * @return the default object for this class
+         * @throws ValidationException if invalid object
          */
         @Override
         protected Response getDefaultObject0() throws ValidationException {
@@ -404,6 +409,7 @@ class ResponseTest {
          * Factory method for generating a second object to test for (in)equality
          *
          * @return the default object for this class
+         * @throws ValidationException if invalid object
          */
         @Override
         protected Response getDefaultObject1() throws ValidationException {
@@ -414,6 +420,7 @@ class ResponseTest {
          * Factory method for generating a third object to test for (in)equality
          *
          * @return the default object for this class
+         * @throws ValidationException if invalid object
          */
         @Override
         protected Response getDefaultObject2() throws ValidationException {
@@ -424,6 +431,7 @@ class ResponseTest {
          * Factory method for generating a fourth object to test for (in)equality
          *
          * @return the default object for this class
+         * @throws ValidationException if invalid object
          */
         @Override
         protected Response getDefaultObject3() throws ValidationException {
@@ -448,7 +456,9 @@ class ResponseTest {
         /**
          * Factory method for generating a fifth object to test for (in)equality
          * RESERVED FOR COMPLEX EQUALS
+         *
          * @return the default object for this class
+         * @throws ValidationException if invalid object
          */
         @Override
         protected Response getDefaultObject4() throws ValidationException {
@@ -475,10 +485,23 @@ class ResponseTest {
          * in types and hashcodes
          *
          * @return instantiation of different class object with similar field definitions
+         * @throws ValidationException if invalid object
          */
         @Override
         protected Query getDifferentTypeObject() throws ValidationException {
             return new Query(0, "good.com.");
+        }
+
+        /**
+         * Factory method for generating the first same object as getDefaultObject0 but with a different case
+         * to test for ignore case equality
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected Response getDefaultObjectDifferentCase1() throws ValidationException {
+            return new Response(0, "GOOD.COM.");
         }
     }
 

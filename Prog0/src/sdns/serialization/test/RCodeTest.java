@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import sdns.serialization.RCode;
 import sdns.serialization.ValidationException;
+import sdns.serialization.test.factories.RCodeSetGetAbstractTestFactory;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -19,7 +20,7 @@ public class RCodeTest {
      * Test getRCode
      */
     @Nested
-    class RCodeGetRCodeSetGet extends RCodeSetGetAbstractTest {
+    class RCodeGetRCodeSetGet extends RCodeSetGetAbstractTestFactory {
         /**
          * Factory method for calling the appropriate function you want to test for rcode validity
          *
