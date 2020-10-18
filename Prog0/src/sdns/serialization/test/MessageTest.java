@@ -20,6 +20,9 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Harrison Rogers
  */
 class MessageTest {
+    /**
+     * Test malformed header decodes
+     */
     @Nested
     class DecodeHeaderMalformed {
         @Test
@@ -135,6 +138,9 @@ class MessageTest {
         }
     }
 
+    /**
+     * Test malformed decodes
+     */
     @Nested
     class DecodeQueryMalformed {
         @Test @DisplayName("Basic header test error short query name")
@@ -237,6 +243,9 @@ class MessageTest {
         }
     }
 
+    /**
+     * Test validation exception decodes
+     */
     @Nested
     class DecodeValidationException {
         //Basic query test
@@ -354,6 +363,9 @@ class MessageTest {
         }
     }
 
+    /**
+     * Test valid decodes
+     */
     @Nested
     class DecodeValid {
         //Basic test
@@ -560,7 +572,9 @@ class MessageTest {
         }
     }
 
-    //test getter and setter for id
+    /**
+     * Test getter/setter for ID
+     */
     @Nested
     class GetSetID extends SdnsIDTestFactory {
         /**
@@ -583,7 +597,9 @@ class MessageTest {
         }
     }
 
-    //test getter and setter for query
+    /**
+     * Test getter/setter for query
+     */
     @Nested
     class GetSetQuery extends DomainNameTestFactory {
         /**
