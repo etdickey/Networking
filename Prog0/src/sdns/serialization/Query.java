@@ -35,7 +35,7 @@ public class Query extends Message {
      *       1      TrunCation (0, ignore)
      *       1      Recursion Desired (1, ignore)
      *       1      Recursion Available (0, ignore)
-     *       3      Z (reserved for future) (0, 0)
+     *       3      Z (reserved for future) (0, ignore)
      *       4      Response code (0/1/2/3/4/5, 0/1/2/3/4/5)
      *       16     0x0001
      *       16     ANCOUNT (unsigned) query(0, 0), response(*, *)
@@ -51,9 +51,9 @@ public class Query extends Message {
 
         try {
             byte temp = readByte(in, "when reading the header");
-            //RA, ignore; Z, 0; RCode, 0
-            if((temp & 0x70) != 0 || (temp & 0x0F) != 0){
-                throw new ValidationException("ERROR: Z or RCode not set correctly, byte: " + temp, temp + "");
+            //RA, ignore; Z, ignore; RCode, 0
+            if((temp & 0x0F) != 0){
+                throw new ValidationException("ERROR: RCode not set correctly, byte: " + temp, temp + "");
             }
             //0x0001
             int trash = readUnsignedShortBigEndian(in);

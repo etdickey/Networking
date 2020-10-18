@@ -18,8 +18,6 @@ class ValidationUtils {
     static final int DOMAIN_NAME_MAX_LEN = 255;
     //Max label length
     static final int DOMAIN_NAME_LABEL_MAX_LEN = 63;
-    //A list of valid RCodes based on the specification
-    static final List<Integer> VALID_RCODES = new ArrayList<>(Arrays.asList(0, 1, 2, 3, 4, 5));
 
     /**
      * Checks if character is in the set of characters [a-zA-Z]

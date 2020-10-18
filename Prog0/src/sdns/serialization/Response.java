@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Objects;
 
 import static sdns.serialization.IOUtils.*;
-import static sdns.serialization.ValidationUtils.VALID_RCODES;
 
 /**
  * Represents a SDNS response and provides serialization/deserialization
@@ -29,7 +28,7 @@ public class Response extends Message {
     //A list of additional RRs
     private final List<ResourceRecord> additionalList = new ArrayList<>();
     //Message response code
-    private byte responseCode = 0;
+    private RCode responseCode = RCode.NOERROR;
 
     /**
      * Constructs SDNS response using given values
@@ -51,10 +50,7 @@ public class Response extends Message {
         try {
             //Finish parsing header from RA to ARCount
             byte temp = readByte(in, "when reading the header");
-            //RA, ignore; Z, 0
-            if ((temp & 0x70) != 0) {
-                throw new ValidationException("ERROR: Z (0) not set correctly, byte: " + temp, temp + "");
-            }
+            //RA, ignore; Z, ignore (top 4 bytes)
             //rcode
             this.setResponseCode(temp & 0x0F);
 
@@ -115,7 +111,7 @@ public class Response extends Message {
     protected void writeHeader(List<Byte> out) {
         //Write from QR to Response code
         //1[000 0]001        0[000] [this.response & 0x0F]
-        out.add((byte)0x81); out.add((byte) (this.responseCode & 0x0F));
+        out.add((byte)0x81); out.add((byte) (this.responseCode.getRCodeValue() & 0x0F));
 
         //Write 0x0001
         out.add((byte) 0); out.add((byte) 1);
@@ -160,10 +156,7 @@ public class Response extends Message {
      * @throws ValidationException if rcode is invalid
      */
     public Response setResponseCode(int rcode) throws ValidationException {
-        if(!VALID_RCODES.contains(rcode)){
-            throw new ValidationException("ERROR: Invalid rcode: " + rcode, rcode + "");
-        }
-        this.responseCode = (byte) rcode;
+        this.responseCode = RCode.getRCode(rcode);
         return this;
     }
 
@@ -213,7 +206,7 @@ public class Response extends Message {
      * Get response code
      * @return response code
      */
-    public int getResponseCode() { return this.responseCode; }
+    public RCode getResponseCode() { return this.responseCode; }
 
     /**
      * Get a list of RR answers
@@ -276,7 +269,7 @@ public class Response extends Message {
         result = prime * result + (answerList == null ? 0 : answerList.hashCode());
         result = prime * result + (nameServerList == null ? 0 : nameServerList.hashCode());
         result = prime * result + (additionalList == null ? 0 : additionalList.hashCode());
-        result = prime * result + responseCode;
+        result = prime * result + responseCode.getRCodeValue();
         return result;
     }
 }
