@@ -64,7 +64,7 @@ public class Unknown extends ResourceRecord {
      * @return the serialized version of this objects rdata
      */
     @Override
-    public List<Byte> serializeRData() throws UnsupportedOperationException { throw new UnsupportedOperationException("Cannot encode Unknown type"); }
+    protected List<Byte> serializeRData() throws UnsupportedOperationException { throw new UnsupportedOperationException("Cannot encode Unknown type"); }
 
     /**
      * Return type value for specific RR

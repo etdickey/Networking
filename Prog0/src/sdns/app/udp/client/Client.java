@@ -15,7 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.lang.System.out;
+import static java.lang.System.err;
 
 /**
  * SDNS UDP client that first sends all questions, records each ID/Question in ExpectedList (EL), and then
@@ -61,7 +61,7 @@ public class Client {
         //  otherwise retransmit all queries in EL
         if(hasTimedOut){
             for(Query q : expectedList){
-                out.println("No response: " + q.getQuery());
+                err.println("No response: " + q.getQuery());
             }
             System.exit(1);
         } else {
@@ -69,7 +69,7 @@ public class Client {
             try {
                 sendQueries(sout, servAddr, servPort, expectedList);
             } catch (IOException e) {
-                out.println("ERROR: I/O error while writing to socket: " + e.getMessage());
+                err.println("ERROR: I/O error while writing to socket: " + e.getMessage());
                 System.exit(1);
             }
         }
@@ -91,12 +91,12 @@ public class Client {
                     //handle non-zero error (rcode)
                     if(r.getResponseCode() != 0){
                         switch(r.getResponseCode()){
-                            case 1: out.println("ERROR: Format error: " + r.toString()); break;
-                            case 2: out.println("ERROR: Server failure: " + r.toString()); break;
-                            case 3: out.println("ERROR: Name Error: " + r.toString()); break;
-                            case 4: out.println("ERROR: Not Implemented: " + r.toString()); break;
-                            case 5: out.println("ERROR: Refused: " + r.toString()); break;
-                            default: out.println("ERROR: Invalid opcode: " + r.toString());
+                            case 1: err.println("ERROR: Format error: " + r.toString()); break;
+                            case 2: err.println("ERROR: Server failure: " + r.toString()); break;
+                            case 3: err.println("ERROR: Name Error: " + r.toString()); break;
+                            case 4: err.println("ERROR: Not Implemented: " + r.toString()); break;
+                            case 5: err.println("ERROR: Refused: " + r.toString()); break;
+                            default: err.println("ERROR: Invalid opcode: " + r.toString());
                         }
                         //remove from EL (this invalidates the list iterators, MUST EXIT LOOP)
                         expectedList.remove(q);
@@ -106,14 +106,14 @@ public class Client {
                         return true;
                     }
                 } else {
-                    out.println("Non-matching query: " + r.toString());
+                    err.println("Non-matching query: " + r.toString());
                     break;
                 }
             }
         }
 
         //handle no matching ID in EL
-        out.println("No such ID: " + r.toString());
+        err.println("No such ID: " + r.toString());
 
         return false;
     }
@@ -135,12 +135,12 @@ public class Client {
             handleTimeout(sout, servAddr, servPort, expectedList);
             return null;
         } catch (IOException e) {
-            out.println("ERROR: I/O error while writing to socket: " + e.getMessage());
+            err.println("ERROR: I/O error while writing to socket: " + e.getMessage());
             System.exit(1);
         }
 
         if (!pack.getAddress().equals(servAddr)) {// Check source
-            out.println("Received packet from an unknown source");
+            err.println("Received packet from an unknown source");
             System.exit(1);
         }
 
@@ -154,7 +154,7 @@ public class Client {
             if(m instanceof Response && validateResponse(expectedList, (Response)m)){
                 r = (Response)m;
             } else {
-                out.println("Unexpected query: " + m.toString());
+                err.println("Unexpected query: " + m.toString());
             }
 
             return r;
@@ -167,12 +167,12 @@ public class Client {
             //As such, it is almost impossible to correctly identify every time .decode() does any of the specified
             //  behaviors and so it is not attempted to catch all of them, just most of them.
             if(e.getBadToken().toLowerCase().contains("too many")){
-                out.println("Packet too long");
-                out.println("Response: " + Arrays.toString(pack.getData()));
+                err.println("Packet too long");
+                err.println("Response: " + Arrays.toString(pack.getData()));
             } else if(e.getCause() instanceof EOFException || e.getBadToken().toLowerCase().contains("not long")){
-                out.println("Packet too short");
+                err.println("Packet too short");
             } else {
-                out.println("ERROR: " + e.getMessage());
+                err.println("ERROR: " + e.getMessage());
             }
 
             return null;
@@ -217,7 +217,7 @@ public class Client {
             socket.setSoTimeout(MAX_TIMEOUT_MS);//set timeout
         } catch (SocketException e) {
             //"if the socket could not be opened, or the socket could not bind to the specified local port"
-            out.println("ERROR: I/O Error while creating the socket or output stream: " + e.getMessage());
+            err.println("ERROR: I/O Error while creating the socket or output stream: " + e.getMessage());
             System.exit(1);
         }
 
@@ -230,7 +230,7 @@ public class Client {
                 //construct a query
                 el.add(new Query(i, args[i]));
             } catch (ValidationException e) {
-                out.println("Malformed question: " + args[i]);
+                err.println("Malformed question: " + args[i]);
             }
         }
 
@@ -243,7 +243,7 @@ public class Client {
         try {
             sendQueries(socket, serverAddress, serverPort, el);
         } catch (IOException e) {
-            out.println("ERROR: I/O error while writing to socket: " + e.getMessage());
+            err.println("ERROR: I/O error while writing to socket: " + e.getMessage());
             System.exit(1);
         }
 
@@ -252,7 +252,7 @@ public class Client {
             Response r = receiveResponse(socket, serverAddress, serverPort, el);
             if(r != null){
                 //handle success
-                out.println(r.toString());
+                err.println(r.toString());
                 el = el.stream().filter(q -> q.getID() != r.getID()).collect(Collectors.toList());
             }
         }
