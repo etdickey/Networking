@@ -330,7 +330,7 @@ class AAAATest {
         protected AAAA getDefaultObjectDifferentCase1() throws ValidationException {
             AAAA a = null;
             try {
-                a = new AAAA("GOOD.COM.", 123, getDefault0IPv6());
+                a = new AAAA("GOOD.COM.", 123, getDefault1IPv6());
             } catch (UnknownHostException e) {
                 fail();
             }
