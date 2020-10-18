@@ -6,11 +6,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import sdns.serialization.*;
+import sdns.serialization.test.factories.EqualsAndHashCodeCaseInsensitiveTestFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.Inet4Address;
-import java.net.UnknownHostException;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -21,7 +20,12 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Harrison Rogers
  */
 class UnknownTest {
-    private final long CN_TYPE_VALUE = 5L, NS_TYPE_VALUE = 2L, A_TYPE_VALUE = 1L;
+    //The type values for various subtypes (CName, NS, A, AAAA, MX)
+    protected static final int CN_TYPE_VALUE = 5;
+    protected static final int NS_TYPE_VALUE = 2;
+    protected static final int A_TYPE_VALUE = 1;
+    protected static final int AAAA_TYPE_VALUE = 28;
+    protected static final int MX_TYPE_VALUE = 15;
 
     /**
      * Verifies a RR
@@ -58,14 +62,22 @@ class UnknownTest {
      * @return Unknown with ttl = 123, name = "good.com.", type = 2056
      */
     private static Unknown constructUnknownGood123(){
+        return constructUnknownGood123(2056);
+    }
+
+    /**
+     * Helper construct
+     * @return Unknown with ttl = 123, name = "good.com.", type = ttl
+     */
+    private static Unknown constructUnknownGood123(int type){
         byte[] buff = { 4, 'g', 'o', 'o', 'd', 3, 'c', 'o', 'm', -64, 5,
-                8, 8,
+                (byte) ((type >> 8) & 0x00FF), (byte) (type & 0x00FF),
                 0, 1, //0x0001
                 0, 0, 0, 123,
                 0, 8,
                 0, 0, 0, 0, 0, 0, 0, 0};
         Unknown temp = constructUnknown(buff);
-        verifyRR(temp, "good.com.", 123, 2056);
+        verifyRR(temp, "good.com.", 123, type);
         return temp;
     }
 
@@ -104,59 +116,15 @@ class UnknownTest {
             assertNotEquals(CN_TYPE_VALUE, un.getTypeValue());
             assertNotEquals(NS_TYPE_VALUE, un.getTypeValue());
             assertNotEquals(A_TYPE_VALUE, un.getTypeValue());
+            assertNotEquals(AAAA_TYPE_VALUE, un.getTypeValue());
+            assertNotEquals(MX_TYPE_VALUE, un.getTypeValue());
         } catch(Exception e){
             assert(false);
         }
     }
 
     /**
-     * Equals and hashcode tests
-     */
-    @Nested
-    class EqualsAndHashCode {
-        @Test @DisplayName("Equals test basic")
-        void equality1(){
-            ResourceRecord u1, u2;
-
-            u1 = constructUnknownDot321();
-            u2 = constructUnknownDot321();
-
-            assertEquals(u1, u2);
-        }
-
-        @Test @DisplayName("Equals tests not not equals")
-        void equality2(){
-            ResourceRecord u1, u2;
-
-            u1 = constructUnknownGood123();
-            u2 = constructUnknownGood123();
-
-            assertFalse(!u1.equals(u2));
-        }
-
-        @Test @DisplayName("Hashcode not equals")
-        void hash1(){
-            ResourceRecord u1, u2, u3, u4;
-
-            try {
-                u1 = constructUnknownGood123();
-                u2 = new NS("good.com.", 123, ".");
-                u3 = new CName("good.com.", 123, ".");
-                u4 = new A("good.com.", 123, (Inet4Address)Inet4Address.getByName("1.1.1.1"));
-
-                assertAll("Hashcode not equal to any other type",
-                        () -> assertNotEquals(u1.hashCode(), u2.hashCode()),
-                        () -> assertNotEquals(u1.hashCode(), u3.hashCode()),
-                        () -> assertNotEquals(u1.hashCode(), u4.hashCode())
-                );
-            } catch (ValidationException | UnknownHostException e) {
-                assert(false);
-            }
-        }
-    }
-
-    /**
-     * To string test
+     * To string test (DONE)
      */
     @Test
     void testToString() {
@@ -175,6 +143,94 @@ class UnknownTest {
             assertEquals(expected, output);
         } catch (ValidationException | IOException e) {
             fail();
+        }
+    }
+
+    /**
+     * Equals and hashcode tests (DONE)
+     */
+    @Nested
+    class EqualsAndHashCode extends EqualsAndHashCodeCaseInsensitiveTestFactory<Unknown> {
+        /**
+         * Factory method for generating the first same object as getDefaultObject0 but with a different case
+         * to test for ignore case equality
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected Unknown getDefaultObjectDifferentCase1() throws ValidationException {
+            return (Unknown) constructUnknownGood123().setName(constructUnknownGood123().getName().toUpperCase());
+        }
+
+        /**
+         * Factory method for generating a default object to test for (in)equality
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected Unknown getDefaultObject0() throws ValidationException {
+            return constructUnknownGood123();
+        }
+
+        /**
+         * Factory method for generating a second object to test for (in)equality
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected Unknown getDefaultObject1() throws ValidationException {
+            return (Unknown) constructUnknownGood123().setName("good.com.q.");
+        }
+
+        /**
+         * Factory method for generating a third object to test for (in)equality
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected Unknown getDefaultObject2() throws ValidationException {
+            return (Unknown) constructUnknownGood123().setTTL(379);
+        }
+
+        /**
+         * Factory method for generating a fourth object to test for (in)equality
+         * Defaults to getDefaultObject0
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected Unknown getDefaultObject3() throws ValidationException {
+            return constructUnknownGood123(2056);
+        }
+
+        /**
+         * Factory method for generating a fifth object to test for (in)equality
+         * RESERVED FOR COMPLEX EQUALS
+         * Defaults to getDefaultObject1
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected Unknown getDefaultObject4() throws ValidationException {
+            return constructUnknownGood123(8);
+        }
+
+        /**
+         * Factory method for generating a SIMILAR object (to default0) of a different type to test for inequality
+         * in types and hashcodes
+         *
+         * @return instantiation of different class object with similar field definitions
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected CName getDifferentTypeObject() throws ValidationException {
+            return new CName("good.com.", 123, ".");
         }
     }
 }

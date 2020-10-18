@@ -10,6 +10,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import sdns.serialization.*;
+import sdns.serialization.test.factories.DomainNameTestFactory;
+import sdns.serialization.test.factories.TTLTestFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -28,8 +30,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Harrison Rogers
  */
 class ResourceRecordTest {
-    //Case insensitive string comparison
-
     /**
      * Serializes the given domain name.  Does not check that name is a valid domain name.
      * @param name the domain name to validate
@@ -706,9 +706,8 @@ class ResourceRecordTest {
             }
 
             ByteArrayInputStream bstream = new ByteArrayInputStream(buff);
-            ResourceRecord temp = null;
             try {
-                temp = ResourceRecord.decode(bstream);
+                ResourceRecord temp = ResourceRecord.decode(bstream);
                 assert temp != null;
                 assertEquals(temp.getName(), name);
             } catch (ValidationException | IOException e) {
@@ -778,14 +777,12 @@ class ResourceRecordTest {
             }
 
             ByteArrayInputStream bstream = new ByteArrayInputStream(buff);
-            ResourceRecord temp = null;
             try {
-                temp = ResourceRecord.decode(bstream);
+                ResourceRecord temp = ResourceRecord.decode(bstream);
                 assert(temp != null);
                 assertEquals(((NS)temp).getNameServer(), name);
             } catch (ValidationException | IOException e) {
                 assert(false);
-                e.printStackTrace();
             }
         }
 
@@ -832,14 +829,12 @@ class ResourceRecordTest {
             }
 
             ByteArrayInputStream bstream = new ByteArrayInputStream(buff);
-            ResourceRecord temp = null;
             try {
-                temp = ResourceRecord.decode(bstream);
+                ResourceRecord temp = ResourceRecord.decode(bstream);
                 assert(temp != null);
                 assertEquals(((CName)temp).getCanonicalName(), name);
             } catch (ValidationException | IOException e) {
                 assert(false);
-                e.printStackTrace();
             }
         }
 
@@ -1030,7 +1025,6 @@ class ResourceRecordTest {
                 assertEquals(temp.getTTL(), ttl);
             } catch (ValidationException | IOException e) {
                 assert(false);
-                e.printStackTrace();
             }
         }
 
@@ -1122,86 +1116,37 @@ class ResourceRecordTest {
 
     /**
      * Name setter and getter tests (DONE)
-     * Name: -- these tests apply to all domain name field tests
-     *     Each label must start with a letter, end with a letter or digit, and have as interior characters only letters
-     *       (A-Z and a-z), digits (0-9), and hypen (-).
-     *     A name with a single, empty label (".") is acceptable
      */
     @Nested
-    class NameSetterGetter {
-        //set canonical name tests ERROR
-        @ParameterizedTest(name = "Name error = {0}")
-        @ValueSource(strings = {"", "asdf", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.⭐.⭕.",
-                "-a.f", "-.", "-",
-                "a234567890123456789012345678901234567890123456789012345678901234.",
-                "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
-                        "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
-                        "a2345678901."//256
-        })
-        void setNameValidationException(String name) {
-            ResourceRecord cn, ns;
-            //CName
-            try {
+    class NameSetterGetter extends DomainNameTestFactory {
+        /**
+         * Factory method for calling the appropriate function you want to test for domain name validity
+         *
+         * @param dm domain name to test
+         * @return the result of a getDM on the respective object
+         * @throws ValidationException if invalid domain name
+         */
+        @Override
+        protected String setGetDomainName(String dm) throws ValidationException {
+            ResourceRecord cn = null;
+            try {//Shouldn't fail here
                 cn = new CName(".", 0, ".");
-                assertThrows(ValidationException.class, () -> cn.setName(name));
-            } catch(Exception e){
-                assert(false);
+            } catch(ValidationException e){
+                fail();
             }
-            //NS
-            try {
-                ns = new NS(".", 0, ".");
-                assertThrows(ValidationException.class, () -> ns.setName(name));
-            } catch(Exception e){
-                assert(false);
-            }
+            cn.setName(dm);
+            return cn.getName();
         }
 
-        //Set name null
-        @Test @DisplayName("Set name null")
-        void setNameNullPtr() {
-            ResourceRecord cn, ns;
-            //CName
-            try {
-                cn = new CName(".", 0, ".");
-                assertThrows(ValidationException.class, () -> cn.setName(null));
-            } catch(Exception e){
-                assert(false);
-            }
-            //NS
-            try {
-                ns = new NS(".", 0, ".");
-                assertThrows(ValidationException.class, () -> ns.setName(null));
-            } catch(Exception e){
-                assert(false);
-            }
-        }
-
-        //set canonical name tests VALID
-        @ParameterizedTest(name = "Name valid = {0}")
-        @ValueSource(strings = {"a23456789012345678901234567890123456789012345678901234567890123.",
-                "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
-                        "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
-                        "a234567890.",//255
-                "foo.", "foo.com.", "f0-9.c0m.", "google.com.", "www.baylor.edu.", "f0.c-0.", ".", "f-0.", "f-0a."
-        })
-        void setAndGetNameValid(String name) {
-            ResourceRecord cn, ns;
-            //CName
-            try {
-                cn = new CName(".", 0, ".");
-                cn.setName(name);
-                assertEquals(name, cn.getName());
-            } catch(Exception e){
-                assert(false);
-            }
-            //NS
-            try {
-                ns = new NS(".", 0, ".");
-                ns.setName(name);
-                assertEquals(name, ns.getName());
-            } catch(Exception e){
-                assert(false);
-            }
+        /**
+         * Allows the concrete class to specify which exception it wants to be thrown when a
+         * null string is passed to the function
+         *
+         * @return class to throw
+         */
+        @Override
+        protected Class<? extends Throwable> getNullThrowableType() {
+            return ValidationException.class;
         }
     }
 
@@ -1209,49 +1154,24 @@ class ResourceRecordTest {
      * TTL Setter and getter (DONE)
      */
     @Nested
-    class TTLSetterGetter {
-        //ValidationException TTL tests
-        @ParameterizedTest(name = "TTL error = {0}")
-        @ValueSource(ints = {-1, -2147483648})
-        void constTTLValidationError(int ttl){
-            ResourceRecord cn, ns;
-            //CName
+    class TTLSetterGetter extends TTLTestFactory {
+        /**
+         * Factory method for calling the appropriate function you want to test for TTL validity
+         *
+         * @param ttl ttl to test
+         * @return the result of a getTTL on the respective object
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected int setGetTTL(int ttl) throws ValidationException {
+            ResourceRecord cn = null;
             try {
                 cn = new CName(".", 0, ".");
-                assertThrows(ValidationException.class, () -> cn.setTTL(ttl));
-            } catch(Exception e){
-                assert(false);
+            } catch(ValidationException e){
+                fail();
             }
-            //NS
-            try {
-                ns = new NS(".", 0, ".");
-                assertThrows(ValidationException.class, () -> ns.setTTL(ttl));
-            } catch(Exception e){
-                assert(false);
-            }
-        }
-
-        //set AND get ttl tests VALID
-        @ParameterizedTest(name = "TTL valid = {0}")
-        @ValueSource(ints = {0, 1, 2147483647})
-        void setAndGetTTLValid(int ttl) {
-            ResourceRecord cn, ns;
-            //CName
-            try {
-                cn = new CName(".", 0, ".");
-                cn.setTTL(ttl);
-                assertEquals(ttl, cn.getTTL());
-            } catch(Exception e){
-                assert(false);
-            }
-            //NS
-            try {
-                ns = new NS(".", 0, ".");
-                ns.setTTL(ttl);
-                assertEquals(ttl, ns.getTTL());
-            } catch(Exception e){
-                assert(false);
-            }
+            cn.setTTL(ttl);
+            return cn.getTTL();
         }
     }
 }

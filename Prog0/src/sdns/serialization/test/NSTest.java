@@ -5,27 +5,30 @@ package sdns.serialization.test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import sdns.serialization.CName;
 import sdns.serialization.NS;
 import sdns.serialization.ValidationException;
+import sdns.serialization.test.factories.DomainNameTestFactory;
+import sdns.serialization.test.factories.EqualsAndHashCodeCaseInsensitiveTestFactory;
+import sdns.serialization.test.factories.TTLTestFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
-//Note: rerun all tests with different character encodings (UTF-32, UTF-16, etc) at runtime
+
 /**
  * @author Ethan Dickey
  * @author Harrison Rogers
  */
 class NSTest {
+    //NS type value
     private final long NS_TYPE_VALUE = 2L;
 
     /**
      * Trivial test (DONE)
      */
-    @Test
+    @Test @DisplayName("Get type value")
     void getTypeValue() {
         NS ns;
         try {
@@ -37,9 +40,9 @@ class NSTest {
     }
 
     /**
-     * Test tostring
+     * Test tostring (DONE)
      */
-    @Test
+    @Test @DisplayName("ToString")
     void testToString() {
         String expected = "NS: name=foo.com. ttl=42 nameserver=thisIsABoringName.";
         try {
@@ -53,136 +56,38 @@ class NSTest {
     }
 
     /**
-     * Equals tests
-     */
-    @Nested
-    class Equals {
-        //Equals test
-        @Test @DisplayName("Donahoo failure")
-        void testNotEqual(){
-            NS a, b;
-
-            try {
-                a = new NS("good.com.q.", 123, "good.com.");
-                b = new NS("good.com.", 123, "good.com.");
-                assertNotEquals(a, b);
-            } catch (ValidationException e) {
-                assert(false);
-            }
-        }
-    }
-
-    /**
      * Name server setter and getter tests (DONE)
-     *     //Name: -- these tests apply to all domain name field tests
-     *     Each label must start with a letter, end with a letter or digit, and have as interior characters only letters
-     *       (A-Z and a-z), digits (0-9), and hypen (-).
-     *     A name with a single, empty label (".") is acceptable
      */
     @Nested
-    class NameServerSetterGetter {
-        //set name server tests ERROR
-        @ParameterizedTest(name = "Name Server = {0}")
-        @ValueSource(strings = {"", "asdf", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.⭐.⭕.",
-                "-a.f", "-.", "-",
-                "a234567890123456789012345678901234567890123456789012345678901234.",//64
-                "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
-                        "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
-                        "a2345678901."//256
-        })
-        void setNameServerValidationException(String name) {
-            NS ns;
-            try {
+    class NameServerSetterGetter extends DomainNameTestFactory {
+        /**
+         * Factory method for calling the appropriate function you want to test for domain name validity
+         *
+         * @param dm domain name to test
+         * @return the result of a getDM on the respective object
+         * @throws ValidationException if invalid domain name
+         */
+        @Override
+        protected String setGetDomainName(String dm) throws ValidationException {
+            NS ns = null;
+            try {//Shouldn't fail here
                 ns = new NS(".", 0, ".");
-                assertThrows(ValidationException.class, () -> ns.setNameServer(name));
-            } catch(Exception e){
-                assert(false);
+            } catch(ValidationException e){
+                fail();
             }
-        }
-        @Test
-        @DisplayName("Set name server null ptr")
-        void setNameServerNullPtr() {
-            NS ns;
-            try {
-                ns = new NS(".", 0, ".");
-                assertThrows(ValidationException.class, () -> ns.setNameServer(null));
-            } catch(Exception e){
-                assert(false);
-            }
+            ns.setNameServer(dm);
+            return ns.getNameServer();
         }
 
-        //set name server tests VALID
-        @ParameterizedTest(name = "Name Server = {0}")
-        @ValueSource(strings = {"a23456789012345678901234567890123456789012345678901234567890123.",//63
-                "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
-                        "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
-                        "a234567890.",//255
-                "foo.", "foo.com.", "f0-9.c0m.", "google.com.", "www.baylor.edu.", "f0.c-0.", ".", "f-0.", "f-0a."
-        })
-        void setAndGetNameServerValid(String name) {
-            NS ns;
-            try {
-                ns = new NS(".", 0, ".");
-                ns.setNameServer(name);
-                assertEquals(name, ns.getNameServer());
-            } catch(Exception e){
-                assert(false);
-            }
-        }
-    }
-
-    /**
-     * Constructor error tests (DONE)
-     *     //Name: -- these tests apply to all domain name field tests
-     *     Each label must start with a letter, end with a letter or digit, and have as interior characters only letters
-     *       (A-Z and a-z), digits (0-9), and hypen (-).
-     *     A name with a single, empty label (".") is acceptable
-     */
-    @Nested
-    class NSConstructorErrorTests {
-        //ValidationException name tests ERROR
-        @ParameterizedTest(name = "Name = {0}")
-        @ValueSource(strings = {"", "asdf", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.⭐.⭕.",
-                "-a.f", "-.", "-",
-                "a234567890123456789012345678901234567890123456789012345678901234.",//64
-                "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
-                        "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
-                        "a2345678901."//256
-        })
-        void constrNameValidationError(String name) {
-            assertThrows(ValidationException.class, () -> new NS(name, 0, "."));
-        }
-
-        @Test
-        @DisplayName("Name null ptr")
-        void constrNameValidationErrorNull() {
-            assertThrows(ValidationException.class, () -> new NS(null, 0, "."));
-        }
-
-        //ValidationException name server tests ERROR
-        @ParameterizedTest(name = "Name Server = {0}")
-        @ValueSource(strings = {"", "asdf", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.⭐.⭕.",
-                "-a.f", "-.", "-",
-                "a234567890123456789012345678901234567890123456789012345678901234.",//64
-                "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
-                        "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
-                        "a2345678901."//256
-        })
-        void constrNameServerValidationError(String name) {
-            assertThrows(ValidationException.class, () -> new NS(".", 0, name));
-        }
-
-        @Test
-        @DisplayName("Name Server null ptr")
-        void constrNameServerNullPtr() {
-            assertThrows(ValidationException.class, () -> new NS(".", 0, null));
-        }
-
-        //ValidationException TTL tests
-        @ParameterizedTest(name = "TTL = {0}")
-        @ValueSource(ints = {-1, -2147483648})
-        void constTTLValidationError(int ttl) {
-            assertThrows(ValidationException.class, () -> new NS(".", ttl, "."));
+        /**
+         * Allows the concrete class to specify which exception it wants to be thrown when a
+         * null string is passed to the function
+         *
+         * @return class to throw
+         */
+        @Override
+        protected Class<? extends Throwable> getNullThrowableType() {
+            return ValidationException.class;
         }
     }
 
@@ -190,59 +95,86 @@ class NSTest {
      * Constructor valid tests (DONE)
      */
     @Nested
-    class NSConstructorValidTests {
-        //Constructor name tests VALID
-        @ParameterizedTest(name = "Name = {0}")
-        @ValueSource(strings = {"a23456789012345678901234567890123456789012345678901234567890123.",
-                "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
-                        "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
-                        "a234567890.",//255
-                "foo.", "foo.com.", "f0-9.c0m.", "google.com.", "www.baylor.edu.", "f0.c-0.", ".", "f-0.", "f-0a."
-        })
-        void constrNameValid(String name) {
-            NS ns;
-            try {
-                ns = new NS(name, 0, ".");
-                assertEquals(name, ns.getName());
-            } catch(Exception e){
-                assert(false);
+    class NSConstructorTests {
+        /**
+         * NS constructor name tests
+         */
+        @Nested
+        class NSConstructorNameTests extends DomainNameTestFactory {
+            /**
+             * Factory method for calling the appropriate function you want to test for domain name validity
+             *
+             * @param dm domain name to test
+             * @return the result of a getDM on the respective object
+             * @throws ValidationException if invalid domain name
+             */
+            @Override
+            protected String setGetDomainName(String dm) throws ValidationException {
+                NS ns = new NS(dm, 0, ".");
+                return ns.getName();
+            }
+
+            /**
+             * Allows the concrete class to specify which exception it wants to be thrown when a
+             * null string is passed to the function
+             *
+             * @return class to throw
+             */
+            @Override
+            protected Class<? extends Throwable> getNullThrowableType() {
+                return ValidationException.class;
             }
         }
 
-        //Constructor name server tests VALID
-        @ParameterizedTest(name = "Name Server = {0}")
-        @ValueSource(strings = {"a23456789012345678901234567890123456789012345678901234567890123.",
-                "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
-                        "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
-                        "a234567890.",//255
-                "foo.", "foo.com.", "f0-9.c0m.", "google.com.", "www.baylor.edu.", "f0.c-0.", ".", "f-0.", "f-0a."
-        })
-        void constrNameServerValid(String name) {
-            NS ns;
-            try {
-                ns = new NS(".", 0, name);
-                assertEquals(name, ns.getNameServer());
-            } catch(Exception e){
-                assert(false);
+        /**
+         * NS constructor name server tests
+         */
+        @Nested
+        class NSConstructorNameServerTests extends DomainNameTestFactory {
+            /**
+             * Factory method for calling the appropriate function you want to test for domain name validity
+             *
+             * @param dm domain name to test
+             * @return the result of a getDM on the respective object
+             * @throws ValidationException if invalid domain name
+             */
+            @Override
+            protected String setGetDomainName(String dm) throws ValidationException {
+                NS ns = new NS(".", 0, dm);
+                return ns.getNameServer();
+            }
+
+            /**
+             * Allows the concrete class to specify which exception it wants to be thrown when a
+             * null string is passed to the function
+             *
+             * @return class to throw
+             */
+            @Override
+            protected Class<? extends Throwable> getNullThrowableType() {
+                return ValidationException.class;
             }
         }
 
-        //Constructor TTL tests
-        @ParameterizedTest(name = "TTL = {0}")
-        @ValueSource(ints = {0, 1, 2147483647})
-        void constTTLValid(int ttl){
-            NS ns;
-            //NS
-            try {
-                ns = new NS(".", ttl, ".");
-                assertEquals(ttl, ns.getTTL());
-            } catch(Exception e){
-                assert(false);
+        /**
+         * NS constructor TTL tests
+         */
+        @Nested
+        class NSConstructorTTLTests extends TTLTestFactory {
+            /**
+             * Factory method for calling the appropriate function you want to test for TTL validity
+             *
+             * @param ttl ttl to test
+             * @return the result of a getTTL on the respective object
+             * @throws ValidationException if invalid object
+             */
+            @Override
+            protected int setGetTTL(int ttl) throws ValidationException {
+                NS ns = new NS(".", ttl, ".");
+                return ns.getTTL();
             }
         }
     }
-
-
 
     //When data enters the domain system its original case should be preserved whenever possible
     //
@@ -308,6 +240,107 @@ class NSTest {
             } catch (ValidationException | IOException e) {
                 fail();
             }
+        }
+    }
+
+    /**
+     * Equals and hashcode tests (DONE)
+     */
+    @Nested
+    class EqualsAndHashCode extends EqualsAndHashCodeCaseInsensitiveTestFactory<NS> {
+        /**
+         * Factory method for generating the first same object as getDefaultObject0 but with a different case
+         * to test for ignore case equality
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected NS getDefaultObjectDifferentCase1() throws ValidationException {
+            return new NS("GOOD.COM.", 0, "foo.a1.");
+        }
+
+        /**
+         * Factory method for generating the second same object as getDefaultObject0 but with a different case
+         * to test for ignore case equality
+         * Defaults to getDefaultObjectDifferentCase0 (if only 1 field to test)
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected NS getDefaultObjectDifferentCase2() throws ValidationException {
+            return new NS("good.com.", 0, "FOO.A1.");
+        }
+
+        /**
+         * Factory method for generating a default object to test for (in)equality
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected NS getDefaultObject0() throws ValidationException {
+            return new NS("good.com.", 0, "foo.a1.");
+        }
+
+        /**
+         * Factory method for generating a second object to test for (in)equality
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected NS getDefaultObject1() throws ValidationException {
+            return new NS("good.com.q.", 0, "foo.a1.");
+        }
+
+        /**
+         * Factory method for generating a third object to test for (in)equality
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected NS getDefaultObject2() throws ValidationException {
+            return new NS("good.com.", 0, "foo.a1.q.");
+        }
+
+        /**
+         * Factory method for generating a fourth object to test for (in)equality
+         * Defaults to getDefaultObject0
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected NS getDefaultObject3() throws ValidationException {
+            return new NS("good.com.", 123, "foo.a1.");
+        }
+
+        /**
+         * Factory method for generating a fifth object to test for (in)equality
+         * RESERVED FOR COMPLEX EQUALS
+         * Defaults to getDefaultObject1
+         *
+         * @return the default object for this class
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected NS getDefaultObject4() throws ValidationException {
+            return new NS("good.com.", 379, "foo.a1.");
+        }
+
+        /**
+         * Factory method for generating a SIMILAR object (to default0) of a different type to test for inequality
+         * in types and hashcodes
+         *
+         * @return instantiation of different class object with similar field definitions
+         * @throws ValidationException if invalid object
+         */
+        @Override
+        protected CName getDifferentTypeObject() throws ValidationException {
+            return new CName("good.com.", 0, "foo.a1.");
         }
     }
 }
