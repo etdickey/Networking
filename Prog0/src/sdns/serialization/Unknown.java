@@ -71,7 +71,7 @@ public class Unknown extends ResourceRecord {
      * @return type value
      */
     @Override
-    public long getTypeValue() { return this.type; }
+    public int getTypeValue() { return this.type; }
 
     /**
      * Returns a String representation
