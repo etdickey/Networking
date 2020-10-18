@@ -121,7 +121,7 @@ public class CName extends ResourceRecord {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         CName that = (CName) o;
-        return canonicalName.equals(that.canonicalName);
+        return canonicalName.equalsIgnoreCase(that.canonicalName);
     }
 
     /**
@@ -133,7 +133,7 @@ public class CName extends ResourceRecord {
         final int prime = 31;
         int result = 1;
         result = prime * result + super.hashCode();
-        result = prime * result + ((canonicalName == null) ? 0 : canonicalName.hashCode());
+        result = prime * result + ((canonicalName == null) ? 0 : canonicalName.toLowerCase().hashCode());
         return result;
     }
 }

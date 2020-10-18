@@ -235,8 +235,7 @@ public abstract class ResourceRecord {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ResourceRecord that = (ResourceRecord) o;
-        return ttl == that.ttl &&
-                Objects.equals(name, that.name);
+        return ttl == that.ttl && name.equalsIgnoreCase(that.name);
     }
 
     /**
@@ -244,5 +243,12 @@ public abstract class ResourceRecord {
      * @return the hashed value
      */
     @Override
-    public int hashCode() { return Objects.hash(name, ttl); }
+    public int hashCode() {
+        final int prime = 9857;
+        int result = 1;
+        result = prime * result;
+        result = prime * result + ttl;
+        result = prime * result + name.toLowerCase().hashCode();
+        return result;
+    }
 }

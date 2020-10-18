@@ -223,7 +223,7 @@ public abstract class Message {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Message message = (Message) o;
-        return id == message.id && query.equals(message.query);
+        return id == message.id && query.equalsIgnoreCase(message.query);
     }
 
     /**
@@ -236,7 +236,7 @@ public abstract class Message {
         int result = 1;
         result = prime * result;
         result = prime * result + id;
-        result = prime * result + query.hashCode();
+        result = prime * result + query.toLowerCase().hashCode();
         return result;
     }
 }

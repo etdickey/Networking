@@ -17,7 +17,7 @@ import static sdns.serialization.IOUtils.readXBytes;
  */
 public class Unknown extends ResourceRecord {
     //RR type
-    int type;
+    private int type;
 
     /**
      * Constructs an Unknown type based on the given variables

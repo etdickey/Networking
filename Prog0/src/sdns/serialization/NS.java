@@ -120,7 +120,7 @@ public class NS extends ResourceRecord {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         NS that = (NS) o;
-        return nameServer.equals(that.nameServer);
+        return nameServer.equalsIgnoreCase(that.nameServer);
     }
 
     /**
@@ -132,7 +132,7 @@ public class NS extends ResourceRecord {
         final int prime = 1019;
         int result = 1;
         result = prime * result + super.hashCode();
-        result = prime * result + ((nameServer == null) ? 0 : nameServer.hashCode());
+        result = prime * result + ((nameServer == null) ? 0 : nameServer.toLowerCase().hashCode());
         return result;
     }
 }
