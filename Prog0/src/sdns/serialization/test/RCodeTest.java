@@ -29,7 +29,7 @@ public class RCodeTest {
          * @throws ValidationException if invalid rcode
          */
         @Override
-        RCode callSetGetRCode(int rcode) throws ValidationException {
+        protected RCode callSetGetRCode(int rcode) throws ValidationException {
             return RCode.getRCode(rcode);
         }
     }

@@ -289,7 +289,7 @@ class ResponseTest {
          * @throws ValidationException if invalid rcode
          */
         @Override
-        RCode callSetGetRCode(int rcode) throws ValidationException {
+        protected RCode callSetGetRCode(int rcode) throws ValidationException {
             Response r = null;
             try {
                 r = new Response(0, ".");

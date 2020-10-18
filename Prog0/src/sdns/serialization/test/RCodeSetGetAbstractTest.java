@@ -39,5 +39,5 @@ abstract class RCodeSetGetAbstractTest {
      * @return the result of a getRCode on the respective object
      * @throws ValidationException if invalid rcode
      */
-    abstract RCode callSetGetRCode(int rcode) throws ValidationException;
+    protected abstract RCode callSetGetRCode(int rcode) throws ValidationException;
 }
