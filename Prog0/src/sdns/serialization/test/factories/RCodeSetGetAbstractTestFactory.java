@@ -1,6 +1,6 @@
 //Contains the RCodeSetGetAbstractTest class (see comments below)
 //Created: 10/18/20
-package sdns.serialization.test;
+package sdns.serialization.test.factories;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Harrison Rogers
  * Makes an abstract class for testing anything with an rcode
  */
-abstract class RCodeSetGetAbstractTest {
+public abstract class RCodeSetGetAbstractTestFactory {
     //invalid tests
     @ParameterizedTest(name = "Test invalid rcode = {0}")
     @ValueSource(ints = {-1, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 2147483647, -2147483648, -64})

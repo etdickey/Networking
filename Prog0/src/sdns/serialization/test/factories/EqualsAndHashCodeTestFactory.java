@@ -1,6 +1,6 @@
 //Contains the EqualsTestFactory class (see comments below)
 //Created: 10/18/20
-package sdns.serialization.test;
+package sdns.serialization.test.factories;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *             0 and 1 are slightly different
  *             0 and 2 are slightly different (in a different way than 0 and 1)
  */
-abstract class EqualsAndHashCodeTestFactory<T> {
+public abstract class EqualsAndHashCodeTestFactory<T> {
     /**
      * Test for inequality between different types
      */
@@ -191,31 +191,36 @@ abstract class EqualsAndHashCodeTestFactory<T> {
     /**
      * Factory method for generating a default object to test for (in)equality
      * @return the default object for this class
+     * @throws ValidationException if invalid object
      */
     protected abstract T getDefaultObject0() throws ValidationException;
     /**
      * Factory method for generating a second object to test for (in)equality
      * @return the default object for this class
+     * @throws ValidationException if invalid object
      */
     protected abstract T getDefaultObject1() throws ValidationException;
     /**
      * Factory method for generating a third object to test for (in)equality
      * @return the default object for this class
+     * @throws ValidationException if invalid object
      */
     protected abstract T getDefaultObject2() throws ValidationException;
     /**
      * Factory method for generating a fourth object to test for (in)equality
-     * Defaults to 0
+     * Defaults to getDefaultObject0
      *
      * @return the default object for this class
+     * @throws ValidationException if invalid object
      */
     protected T getDefaultObject3() throws ValidationException { return getDefaultObject0(); }
     /**
      * Factory method for generating a fifth object to test for (in)equality
      * RESERVED FOR COMPLEX EQUALS
-     * Defaults to 1
+     * Defaults to getDefaultObject1
      *
      * @return the default object for this class
+     * @throws ValidationException if invalid object
      */
     protected T getDefaultObject4() throws ValidationException { return getDefaultObject1(); }
 
@@ -224,6 +229,7 @@ abstract class EqualsAndHashCodeTestFactory<T> {
      *   in types and hashcodes
      * @param <V> different class than T
      * @return instantiation of different class object with similar field definitions
+     * @throws ValidationException if invalid object
      */
     protected abstract <V> V getDifferentTypeObject() throws ValidationException;
 }

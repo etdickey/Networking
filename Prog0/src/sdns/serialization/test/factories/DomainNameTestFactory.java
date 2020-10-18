@@ -1,6 +1,6 @@
 //Contains the DomainNameTestFactory class (see comments below)
 //Created: 10/18/20
-package sdns.serialization.test;
+package sdns.serialization.test.factories;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,9 +15,14 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Harrison Rogers
  * Makes an abstract class for testing anything with a domain name
  */
-abstract class DomainNameTestFactory {
+public abstract class DomainNameTestFactory {
     /**
      * Valid domain name tests
+     * Name: -- these tests apply to all domain name field tests
+     *   Each label must start with a letter, end with a letter or digit, and have as interior characters only letters
+     *     (A-Z and a-z), digits (0-9), and hypen (-).
+     *   A name with a single, empty label (".") is acceptable
+     *
      * @param dm domain name to test
      */
     @ParameterizedTest(name = "Valid DM = {0}")
@@ -37,6 +42,11 @@ abstract class DomainNameTestFactory {
 
     /**
      * Invalid domain name tests
+     * Name: -- these tests apply to all domain name field tests
+     *   Each label must start with a letter, end with a letter or digit, and have as interior characters only letters
+     *     (A-Z and a-z), digits (0-9), and hypen (-).
+     *   A name with a single, empty label (".") is acceptable
+     *
      * @param dm domain name to test
      */
     @ParameterizedTest(name = "Invalid DM = {0}")

@@ -1,6 +1,6 @@
 //Contains the SdnsIDTestFactory class (see comments below)
 //Created: 10/18/20
-package sdns.serialization.test;
+package sdns.serialization.test.factories;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Harrison Rogers
  * Makes an abstract class for testing anything with an SDNS ID (16 bit unsigned int)
  */
-abstract class SdnsIDTestFactory {
+public abstract class SdnsIDTestFactory {
     /**
      * Valid SDNS ID tests (16 bit unsigned int)
      * @param id id to test
