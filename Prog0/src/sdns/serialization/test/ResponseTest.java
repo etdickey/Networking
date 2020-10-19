@@ -30,7 +30,7 @@ class ResponseTest {
                 "answers=[CName: name=a.com. ttl=0 canonicalname=., A: name=b.com. ttl=0 address=0.0.0.0] " +
                 "nameservers=[NS: name=ns.com. ttl=0 nameserver=ns1.com.] additionals=[]";
         try {
-            Response test = new Response(500, "ns.com.");
+            Response test = new Response(500, "ns.com.", RCode.NOERROR);
             test.addAnswer(new CName("a.com.", 0, "."));
             test.addAnswer(new A("b.com.", 0, (Inet4Address)Inet4Address.getByName("0.0.0.0")));
             test.addNameServer(new NS("ns.com.", 0, "ns1.com."));
@@ -49,12 +49,11 @@ class ResponseTest {
     @Nested
     class ResponseAddToListErrors {
         //Null add additional error
-        @Test
-        @DisplayName("Test add additional null")
+        @Test @DisplayName("Test add additional null")
         void testNullAddAdditional(){
             Response r;
             try {
-                r = new Response(0, ".");
+                r = new Response(0, ".", RCode.NOERROR);
                 assertThrows(ValidationException.class, () -> r.addAdditional(null));
             } catch (ValidationException e) {
                 assert(false);
@@ -62,12 +61,11 @@ class ResponseTest {
         }
 
         //Null add answer error
-        @Test
-        @DisplayName("Test add answer null")
+        @Test @DisplayName("Test add answer null")
         void testNullAddAnswerList(){
             Response r;
             try {
-                r = new Response(0, ".");
+                r = new Response(0, ".", RCode.NOERROR);
                 assertThrows(ValidationException.class, () -> r.addAnswer(null));
             } catch (ValidationException e) {
                 assert(false);
@@ -75,12 +73,11 @@ class ResponseTest {
         }
 
         //Null add name server error
-        @Test
-        @DisplayName("Test add name server null")
+        @Test @DisplayName("Test add name server null")
         void testNullAddNameServer(){
             Response r;
             try {
-                r = new Response(0, ".");
+                r = new Response(0, ".", RCode.NOERROR);
                 assertThrows(ValidationException.class, () -> r.addNameServer(null));
             } catch (ValidationException e) {
                 assert(false);
@@ -94,12 +91,11 @@ class ResponseTest {
     @Nested
     class ResponseAdderGetterValid {
         //Test addAdditional
-        @Test
-        @DisplayName("Test addAdditional")
+        @Test @DisplayName("Test addAdditional")
         void addAdditionalValid(){
             Response r;
             try {
-                r = new Response(0, ".");
+                r = new Response(0, ".", RCode.NOERROR);
                 CName cn = new CName(".", 123, "good.com.");
                 CName cn2 = new CName(".", 123, "good.com.q.");
                 NS ns = new NS(".", 123, "good.server.");
@@ -122,12 +118,11 @@ class ResponseTest {
             }
         }
         //Test addAdditional ignore duplicates
-        @Test
-        @DisplayName("Test addAdditional ignore duplicates")
+        @Test @DisplayName("Test addAdditional ignore duplicates")
         void addAdditionalDuplicateValid(){
             Response r;
             try {
-                r = new Response(0, ".");
+                r = new Response(0, ".", RCode.NOERROR);
                 CName cn1 = new CName(".", 123, "good.com.");
                 CName cn2 = new CName(".", 123, "good.com.");
                 CName cn3 = new CName(".", 123, "good.com.q.");
@@ -160,12 +155,11 @@ class ResponseTest {
         }
 
         //Test addAnswer
-        @Test
-        @DisplayName("Test addAnswer")
+        @Test @DisplayName("Test addAnswer")
         void addAnswerValid(){
             Response r;
             try {
-                r = new Response(0, ".");
+                r = new Response(0, ".", RCode.NOERROR);
                 CName cn = new CName(".", 123, "good.com.");
                 CName cn2 = new CName(".", 123, "good.com.q.");
                 NS ns = new NS(".", 123, "good.server.");
@@ -189,12 +183,11 @@ class ResponseTest {
         }
 
         //Test addAnswer ignore duplicates
-        @Test
-        @DisplayName("Test addAnswer ignore duplicates")
+        @Test @DisplayName("Test addAnswer ignore duplicates")
         void addAnswerDuplicateValid(){
             Response r;
             try {
-                r = new Response(0, ".");
+                r = new Response(0, ".", RCode.NOERROR);
                 CName cn1 = new CName(".", 123, "good.com.");
                 CName cn2 = new CName(".", 123, "good.com.");
                 CName cn3 = new CName(".", 123, "good.com.q.");
@@ -227,12 +220,11 @@ class ResponseTest {
         }
 
         //Test addNameServer
-        @Test
-        @DisplayName("Test addNameServer")
+        @Test @DisplayName("Test addNameServer")
         void addNameServerValid(){
             Response r;
             try {
-                r = new Response(0, ".");
+                r = new Response(0, ".", RCode.NOERROR);
                 NS ns1 = new NS(".", 123, "good.server.");
                 NS ns2 = new NS(".", 123, "good.server.a1.");
                 r.addNameServer(ns1);
@@ -250,12 +242,11 @@ class ResponseTest {
         }
 
         //Test addNameServer ignore duplicates
-        @Test
-        @DisplayName("Test addNameServer ignore duplicates")
+        @Test @DisplayName("Test addNameServer ignore duplicates")
         void addNameServerDuplicateValid(){
             Response r;
             try {
-                r = new Response(0, ".");
+                r = new Response(0, ".", RCode.NOERROR);
                 NS ns1 = new NS(".", 123, "good.server.");
                 NS ns2 = new NS(".", 123, "good.server.");
                 NS ns3 = new NS(".", 356, "good.server.a1.");
@@ -280,9 +271,24 @@ class ResponseTest {
 
     /**
      * Test get set response code
+     *   This is kind of pointless now that setRCode takes an RCode
      */
     @Nested
     class ResponseGetSetResponseCode extends RCodeSetGetAbstractTestFactory {
+        /**
+         * Null test rcode
+         */
+        @Test @DisplayName("Null check")
+        void testNullRCode(){
+            Response r;
+            try {
+                r = new Response(0, ".", RCode.NOERROR);
+                assertThrows(ValidationException.class, () -> r.setRCode(null));
+            } catch (ValidationException e) {
+                fail();
+            }
+        }
+
         /**
          * Factory method for calling the appropriate function you want to test for rcode validity
          *
@@ -294,13 +300,13 @@ class ResponseTest {
         protected RCode callSetGetRCode(int rcode) throws ValidationException {
             Response r = null;
             try {
-                r = new Response(0, ".");
+                r = new Response(0, ".", RCode.NOERROR);
             } catch (ValidationException e) {
-                assert(false);
+                fail();
             }
 
-            r.setResponseCode(rcode);
-            return r.getResponseCode();
+            r.setRCode(RCode.getRCode(rcode));
+            return r.getRCode();
         }
     }
 
@@ -314,15 +320,42 @@ class ResponseTest {
         void constInitializationTest(){
             Response r;
             try {
-                r = new Response(0, ".");
+                r = new Response(0, ".", RCode.NOERROR);
                 assertNotNull(r);
                 assertAll("other fields", () -> assertEquals(0, r.getAdditionalList().size()),
                         () -> assertEquals(0, r.getAnswerList().size()),
                         () -> assertEquals(0, r.getNameServerList().size()),
-                        () -> assertEquals(RCode.NOERROR, r.getResponseCode())
+                        () -> assertEquals(RCode.NOERROR, r.getRCode())
                 );
             } catch (ValidationException | NullPointerException e) {
                 assert(false);
+            }
+        }
+
+        /**
+         * Response constructor RCode tests
+         */
+        @Nested
+        class ResponseConstructorRCodeTests extends RCodeSetGetAbstractTestFactory {
+            /**
+             * Null test rcode
+             */
+            @Test @DisplayName("Null check")
+            void testNullRCode(){
+                assertThrows(ValidationException.class, () -> new Response(0, ".", null));
+            }
+
+            /**
+             * Factory method for calling the appropriate function you want to test for rcode validity
+             *
+             * @param rcode rcode to call with
+             * @return the result of a getRCode on the respective object
+             * @throws ValidationException if invalid rcode
+             */
+            @Override
+            protected RCode callSetGetRCode(int rcode) throws ValidationException {
+                Response r = new Response(0, ".", RCode.getRCode(rcode));
+                return r.getRCode();
             }
         }
 
@@ -340,7 +373,7 @@ class ResponseTest {
              */
             @Override
             protected int setGetID(int id) throws ValidationException {
-                Message q = new Response(id, ".");
+                Message q = new Response(id, ".", RCode.NOERROR);
                 return q.getID();
             }
         }
@@ -359,7 +392,7 @@ class ResponseTest {
              */
             @Override
             protected String setGetDomainName(String dm) throws ValidationException {
-                Message q = new Response(0, dm);
+                Message q = new Response(0, dm, RCode.NOERROR);
                 return q.getQuery();
             }
 
@@ -402,7 +435,7 @@ class ResponseTest {
          */
         @Override
         protected Response getDefaultObject0() throws ValidationException {
-            return new Response(0, "good.com.");
+            return new Response(0, "good.com.", RCode.NOERROR);
         }
 
         /**
@@ -413,7 +446,7 @@ class ResponseTest {
          */
         @Override
         protected Response getDefaultObject1() throws ValidationException {
-            return new Response(123, "good.com.q.");
+            return new Response(123, "good.com.q.", RCode.NOERROR);
         }
 
         /**
@@ -424,7 +457,7 @@ class ResponseTest {
          */
         @Override
         protected Response getDefaultObject2() throws ValidationException {
-            return new Response(379, "good.com.");//this makes 0000 0000 0111 1011 into 0000 0001 0111 1011
+            return new Response(379, "good.com.", RCode.NOERROR);//this makes 0000 0000 0111 1011 into 0000 0001 0111 1011
         }
 
         /**
@@ -435,7 +468,7 @@ class ResponseTest {
          */
         @Override
         protected Response getDefaultObject3() throws ValidationException {
-            Response u1 = new Response(0, "foo.");
+            Response u1 = new Response(0, "foo.", RCode.NOERROR);
 
             CName cn = new CName(".", 123, "good.com.");
             CName cn2 = new CName(".", 123, "good.com.q.");
@@ -462,7 +495,7 @@ class ResponseTest {
          */
         @Override
         protected Response getDefaultObject4() throws ValidationException {
-            Response u1 = new Response(0, "foo.");
+            Response u1 = new Response(0, "foo.", RCode.NOERROR);
 
             CName cn = new CName(".", 123, "good.com.");
             CName cn2 = new CName(".", 123, "good.com.q.");
@@ -501,7 +534,7 @@ class ResponseTest {
          */
         @Override
         protected Response getDefaultObjectDifferentCase1() throws ValidationException {
-            return new Response(0, "GOOD.COM.");
+            return new Response(0, "GOOD.COM.", RCode.NOERROR);
         }
     }
 
@@ -564,7 +597,7 @@ class ResponseTest {
 
             try {
                 byte[] result;
-                Response testResponse = new Response(42, "www.foo.com.");
+                Response testResponse = new Response(42, "www.foo.com.", RCode.NOERROR);
                 testResponse.addAnswer(new CName("www.foo.com.", 200, "foo.com."));
                 testResponse.addAnswer(new A("www.foo.com.",200,(Inet4Address)Inet4Address.getByName("20.69.42.21")));
                 testResponse.addNameServer(new NS("foo.com.", 200, "ns.foo.com."));

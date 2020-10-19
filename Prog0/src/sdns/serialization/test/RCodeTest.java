@@ -51,11 +51,16 @@ public class RCodeTest {
     @Test @DisplayName("Test getRCodeMessage returns an appropriate message")
     void testGetRCodeMessage(){
         assertAll("Each rcode value is correct",
-                () -> assertTrue(RCode.NOERROR.getRCodeMessage().toLowerCase().contains("no error")),
-                () -> assertTrue(RCode.FORMATERROR.getRCodeMessage().toLowerCase().contains("format error")),
-                () -> assertTrue(RCode.SERVERFAILURE.getRCodeMessage().toLowerCase().contains("server failure")),
-                () -> assertTrue(RCode.NAMEERROR.getRCodeMessage().toLowerCase().contains("name error")),
-                () -> assertTrue(RCode.NOTIMPLEMENTED.getRCodeMessage().toLowerCase().contains("not implemented")),
-                () -> assertTrue(RCode.REFUSED.getRCodeMessage().toLowerCase().contains("refused")));
+            () -> assertEquals(RCode.NOERROR.getRCodeMessage(), "No error condition"),
+            () -> assertEquals(RCode.FORMATERROR.getRCodeMessage(), "The name server was unable to interpret the query."),
+            () -> assertEquals("The name server was unable to process this query " +
+                    "due to a problem with the name server.", RCode.SERVERFAILURE.getRCodeMessage()),
+            () -> assertEquals("Meaningful only for responses " +
+                    "from an authoritative name server, this code signifies " +
+                    "that the domain name referenced in the query does not exist.", RCode.NAMEERROR.getRCodeMessage()),
+            () -> assertEquals(RCode.NOTIMPLEMENTED.getRCodeMessage(), "The name server does not support the " +
+                    "requested kind of query."),
+            () -> assertEquals(RCode.REFUSED.getRCodeMessage(), "The name server refuses to perform the " +
+                    "specified operation for policy reasons."));
     }
 }

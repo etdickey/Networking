@@ -34,9 +34,13 @@ public class Response extends Message {
      * Constructs SDNS response using given values
      * @param id query id
      * @param query query domain name
-     * @throws ValidationException if validation fails (see specification), including null query
+     * @param rcode response code
+     * @throws ValidationException if validation fails (see specification), including null query, rcode
      */
-    public Response(int id, String query) throws ValidationException { super(id, query); }
+    public Response(int id, String query, RCode rcode) throws ValidationException {
+        super(id, query);
+        this.setRCode(rcode);
+    }
 
     /**
      * Finishes parsing a Response Message from the input stream
@@ -52,7 +56,7 @@ public class Response extends Message {
             byte temp = readByte(in, "when reading the header");
             //RA, ignore; Z, ignore (top 4 bytes)
             //rcode
-            this.setResponseCode(temp & 0x0F);
+            this.setRCode(RCode.getRCode(temp & 0x0F));
 
             //0x0001
             int trash = readUnsignedShortBigEndian(in);
@@ -149,14 +153,18 @@ public class Response extends Message {
     }
     /*End Encode functionality*/
 
+
     /**
      * Set new response code
      * @param rcode new response code
      * @return this Response with updated response code
      * @throws ValidationException if rcode is invalid
      */
-    public Response setResponseCode(int rcode) throws ValidationException {
-        this.responseCode = RCode.getRCode(rcode);
+    public Response setRCode(RCode rcode) throws ValidationException {
+        if(rcode == null) {
+            throw new ValidationException("ERROR: RCode null", "null");
+        }
+        this.responseCode = rcode;
         return this;
     }
 
@@ -206,7 +214,7 @@ public class Response extends Message {
      * Get response code
      * @return response code
      */
-    public RCode getResponseCode() { return this.responseCode; }
+    public RCode getRCode() { return this.responseCode; }
 
     /**
      * Get a list of RR answers

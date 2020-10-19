@@ -588,7 +588,7 @@ class MessageTest {
         protected int setGetID(int id) throws ValidationException {
             Message q = null;
             try {//shouldn't fail for constructor
-                q = new Response(0, ".");
+                q = new Response(0, ".", RCode.NOERROR);
             } catch (ValidationException e) {
                 fail();
             }
@@ -613,7 +613,7 @@ class MessageTest {
         protected String setGetDomainName(String dm) throws ValidationException {
             Message q = null;
             try {//shouldn't fail
-                q = new Response(0, ".");
+                q = new Response(0, ".", RCode.NOERROR);
             } catch(ValidationException e){
                 fail();
             }
