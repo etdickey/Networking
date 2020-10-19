@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *             3 and 4 are complex but slightly different
  *             0 and 1 are slightly different
  *             0 and 2 are slightly different (in a different way than 0 and 1)
+ *             0 and 5 are slightly different (in a different way than previously)
  */
 public abstract class EqualsAndHashCodeTestFactory<T> {
     /**
@@ -150,6 +151,20 @@ public abstract class EqualsAndHashCodeTestFactory<T> {
     }
 
     /**
+     * Test for inequality (object and hash code)
+     */
+    @Test @DisplayName("Inequality (0, 5) (object and hash code)")
+    void testNotEquals4(){
+        try {
+            T a = getDefaultObject0(), b = getDefaultObject5();
+            assertNotEquals(a, b);
+            assertNotEquals(a.hashCode(), b.hashCode());
+        } catch(ValidationException e){
+            fail();
+        }
+    }
+
+    /**
      * Test for consistent hashcodes
      */
     @Test @DisplayName("Repeated x.hashCode -> same value")
@@ -223,6 +238,14 @@ public abstract class EqualsAndHashCodeTestFactory<T> {
      * @throws ValidationException if invalid object
      */
     protected T getDefaultObject4() throws ValidationException { return getDefaultObject1(); }
+    /**
+     * Factory method for generating a sixth object to test for (in)equality
+     * Defaults to getDefaultObject2
+     *
+     * @return the default object for this class
+     * @throws ValidationException if invalid object
+     */
+    protected T getDefaultObject5() throws ValidationException { return getDefaultObject2(); }
 
     /**
      * Factory method for generating a SIMILAR object (to default0) of a different type to test for inequality
