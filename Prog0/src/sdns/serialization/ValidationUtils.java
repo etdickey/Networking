@@ -18,6 +18,8 @@ class ValidationUtils {
     static final int DOMAIN_NAME_MAX_LEN = 255;
     //Max label length
     static final int DOMAIN_NAME_LABEL_MAX_LEN = 63;
+    //Max unsigned short
+    static final int MAX_UNSIGNED_SHORT = 65535;
 
     /**
      * Checks if character is in the set of characters [a-zA-Z]

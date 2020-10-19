@@ -98,6 +98,7 @@ public abstract class ResourceRecord {
             case (short) NS_TYPE_VALUE: toReturn = new NS(name, in); break;
             case (short) A_TYPE_VALUE: toReturn = new A(name, in); break;
             case (short) AAAA_TYPE_VALUE: toReturn = new AAAA(name, in); break;
+            case (short) MX_TYPE_VALUE: toReturn = new MX(name, in); break;
             default: toReturn = new Unknown(name, type, in); break;
         }
 
