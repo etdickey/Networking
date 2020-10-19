@@ -52,15 +52,13 @@ public class RCodeTest {
     void testGetRCodeMessage(){
         assertAll("Each rcode value is correct",
             () -> assertEquals(RCode.NOERROR.getRCodeMessage(), "No error condition"),
-            () -> assertEquals(RCode.FORMATERROR.getRCodeMessage(), "The name server was unable to interpret the query."),
+            () -> assertEquals(RCode.FORMATERROR.getRCodeMessage(), "The name server was unable to interpret the query"),
             () -> assertEquals("The name server was unable to process this query " +
-                    "due to a problem with the name server.", RCode.SERVERFAILURE.getRCodeMessage()),
-            () -> assertEquals("Meaningful only for responses " +
-                    "from an authoritative name server, this code signifies " +
-                    "that the domain name referenced in the query does not exist.", RCode.NAMEERROR.getRCodeMessage()),
+                    "due to a problem with the name server", RCode.SERVERFAILURE.getRCodeMessage()),
+            () -> assertEquals("The domain name referenced in the query does not exist", RCode.NAMEERROR.getRCodeMessage()),
             () -> assertEquals(RCode.NOTIMPLEMENTED.getRCodeMessage(), "The name server does not support the " +
-                    "requested kind of query."),
+                    "requested kind of query"),
             () -> assertEquals(RCode.REFUSED.getRCodeMessage(), "The name server refuses to perform the " +
-                    "specified operation for policy reasons."));
+                    "specified operation"));
     }
 }

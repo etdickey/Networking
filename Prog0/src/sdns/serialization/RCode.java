@@ -79,14 +79,12 @@ public enum RCode {
         String toRet;
         switch(this){
             case NOERROR: toRet = "No error condition"; break;
-            case FORMATERROR: toRet = "The name server was unable to interpret the query."; break;
+            case FORMATERROR: toRet = "The name server was unable to interpret the query"; break;
             case SERVERFAILURE: toRet = "The name server was unable to process this query " +
-                    "due to a problem with the name server."; break;
-            case NAMEERROR: toRet = "Meaningful only for responses " +
-                    "from an authoritative name server, this code signifies " +
-                    "that the domain name referenced in the query does not exist."; break;
-            case NOTIMPLEMENTED: toRet = "The name server does not support the requested kind of query."; break;
-            case REFUSED: toRet = "The name server refuses to perform the specified operation for policy reasons."; break;
+                    "due to a problem with the name server"; break;
+            case NAMEERROR: toRet = "The domain name referenced in the query does not exist"; break;
+            case NOTIMPLEMENTED: toRet = "The name server does not support the requested kind of query"; break;
+            case REFUSED: toRet = "The name server refuses to perform the specified operation"; break;
             default: throw new IllegalStateException("Unexpected value: " + this);
         }
         return toRet;
