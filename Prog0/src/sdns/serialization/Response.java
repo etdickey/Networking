@@ -121,13 +121,13 @@ public class Response extends Message {
         out.add((byte) 0); out.add((byte) 1);
 
         //Write ANCount, NSCount, and ARCount DISCOUNTING number of unknowns
-        out.addAll(Arrays.asList(writeShortBigEndian((int) this.answerList.stream()
+        out.addAll(Arrays.asList(writeShortBigEndian((short) this.answerList.stream()
                                                                 .filter(e -> !(e instanceof Unknown))
                                                                 .count())));
-        out.addAll(Arrays.asList(writeShortBigEndian((int) this.nameServerList.stream()
+        out.addAll(Arrays.asList(writeShortBigEndian((short) this.nameServerList.stream()
                                                                 .filter(e -> !(e instanceof Unknown))
                                                                 .count())));
-        out.addAll(Arrays.asList(writeShortBigEndian((int) this.additionalList.stream()
+        out.addAll(Arrays.asList(writeShortBigEndian((short) this.additionalList.stream()
                                                                 .filter(e -> !(e instanceof Unknown))
                                                                 .count())));
     }
