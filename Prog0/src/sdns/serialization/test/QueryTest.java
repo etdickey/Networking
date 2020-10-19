@@ -135,7 +135,7 @@ class QueryTest {
          */
         @Override
         protected Response getDifferentTypeObject() throws ValidationException {
-            return new Response(123, "good.com.");
+            return new Response(123, "good.com.", RCode.NOERROR);
         }
 
         /**
