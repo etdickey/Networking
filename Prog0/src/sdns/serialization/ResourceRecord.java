@@ -88,9 +88,9 @@ public abstract class ResourceRecord {
         String name = readDomainName(in);
 
         //read higher order Type byte
-        short type = (short) (readByte(in, "when reading type") << 8);
+        int type = readByte(in, "when reading type") << 8;
         //read lower order Type byte
-        type += readByte(in, "when reading type");
+        type += readByte(in, "when reading type") & BYTE_BIT_MASK;
 
         ResourceRecord toReturn;
         switch(type){

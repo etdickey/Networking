@@ -20,6 +20,9 @@ import static sdns.serialization.ValidationUtils.validateDomainName;
  * @version 1.0
  */
 class IOUtils {
+    public static final int SHORT_BIT_MASK = 0x0000FFFF;
+    public static final int BYTE_BIT_MASK = 0x000000FF;
+
     /**
      * Checks if the top two bits are set (indicating the end of a label stream)
      * @param b byte to check

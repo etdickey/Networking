@@ -1052,7 +1052,7 @@ class ResourceRecordTest {
         @Test @DisplayName("Test Unknown double, premature EoS")
         void decodeUnknown2(){
             byte[] buff = { 0,
-                    0, 8,
+                    0, -1,
                     0, 1, //0x0001
                     0, 0, 1, 65,
                     0, 8,
@@ -1070,9 +1070,9 @@ class ResourceRecordTest {
                 assert temp != null;
                 assertEquals(".", temp.getName());
                 assertEquals(321, temp.getTTL());
-                assertEquals(8, temp.getTypeValue());
+                assertEquals(255, temp.getTypeValue());
             } catch (ValidationException | IOException e) {
-                assert (false);
+                fail();
             }
 
             assertThrows(EOFException.class, () -> ResourceRecord.decode(b));
