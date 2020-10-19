@@ -176,6 +176,7 @@ public class Response extends Message {
      */
     public Response addAnswer(ResourceRecord answer) throws ValidationException {
         if(answer == null){ throw new ValidationException("ERROR: addAnswer parameter cannot be null", "null"); }
+
         if(!this.answerList.contains(answer)) {
             this.answerList.add(answer);
         }

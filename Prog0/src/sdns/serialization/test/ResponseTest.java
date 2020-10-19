@@ -5,6 +5,11 @@ package sdns.serialization.test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 import sdns.serialization.*;
 import sdns.serialization.test.factories.DomainNameTestFactory;
 import sdns.serialization.test.factories.EqualsAndHashCodeCaseInsensitiveTestFactory;
@@ -13,7 +18,10 @@ import sdns.serialization.test.factories.SdnsIDTestFactory;
 
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 /**
@@ -86,6 +94,47 @@ class ResponseTest {
     }
 
     /**
+     * Provides lists to the duplicate tests
+     */
+    static class DuplicatesParamFactory implements ArgumentsProvider {
+        /**
+         * Provides lists to the duplicate tests
+         * @param extensionContext unsure what this is
+         * @return a stream of lists
+         * @throws Exception if an exception occurs
+         */
+        @Override
+        public Stream<? extends Arguments> provideArguments(ExtensionContext extensionContext) throws Exception {
+            return Stream.of(Arguments.of(Arrays.asList(
+                    new CName("x.y.", 5, "y.z."),
+                    new CName("x.y.", 5, "y.z."),
+                    new CName("x.y.", 6, "y.z."),
+                    new CName("x.y.", 6, "y.z."),
+                    new NS(".", 123, "good.server."),
+                    new NS(".", 123, "good.server."),
+                    new A(".", 123, (Inet4Address) Inet4Address.getByName("0.0.0.0")),
+                    new A(".", 123, (Inet4Address) Inet4Address.getByName("0.0.0.0"))
+            )), Arguments.of(Arrays.asList(
+                    new CName("x.y.", 5, "y.z."),
+                    new CName("x.y.", 6, "y.z."),
+                    new CName("x.y.", 5, "y.z."),
+                    new CName("X.Y.", 6, "y.z."),
+                    new A("yurp.com.", 345, (Inet4Address) Inet4Address.getByName("1.2.3.4")),
+                    new CName("foo.com.", 5, "foo.com."),
+                    new CName("FOO.COM.", 5, "foo.com."),
+                    new A("yurp.com.", 34, (Inet4Address) Inet4Address.getByName("1.2.3.4")),
+                    new A("yurp.com.", 345, (Inet4Address) Inet4Address.getByName("1.2.3.4")),
+                    new A("blurp.com.", 288, (Inet4Address) Inet4Address.getByName("1.2.3.4")),
+                    new A("yurp.com.", 34, (Inet4Address) Inet4Address.getByName("1.2.3.4")),
+                    new NS("gorp.net.", 4849, "yorp.net."),
+                    new A("yurp.com.", 345, (Inet4Address) Inet4Address.getByName("1.2.3.4")),
+                    new A("yurp.com.", 34, (Inet4Address) Inet4Address.getByName("1.2.3.4")),
+                    new A("yurp.com.", 345, (Inet4Address) Inet4Address.getByName("1.2.3.4"))
+            )));
+        }
+    }
+
+    /**
      * Test adders and getters valid
      */
     @Nested
@@ -117,40 +166,32 @@ class ResponseTest {
                 assert(false);
             }
         }
-        //Test addAdditional ignore duplicates
-        @Test @DisplayName("Test addAdditional ignore duplicates")
-        void addAdditionalDuplicateValid(){
+
+        /**
+         * Test addAdditional ignore duplicates
+         * @param params list to test
+         */
+        @ParameterizedTest(name = "Test addAdditional ignore duplicates")
+        @ArgumentsSource(DuplicatesParamFactory.class)
+        void addAdditionalDuplicateValid(List<ResourceRecord> params){
             Response r;
             try {
                 r = new Response(0, ".", RCode.NOERROR);
-                CName cn1 = new CName(".", 123, "good.com.");
-                CName cn2 = new CName(".", 123, "good.com.");
-                CName cn3 = new CName(".", 123, "good.com.q.");
-                CName cn4 = new CName(".", 123, "good.com.q.");
-                NS ns1 = new NS(".", 123, "good.server.");
-                NS ns2 = new NS(".", 123, "good.server.");
-                A a1 = new A(".", 123, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
-                A a2 = new A(".", 123, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
-                r.addAdditional(cn1);
-                r.addAdditional(cn2);
-                r.addAdditional(cn3);
-                r.addAdditional(cn4);
-                r.addAdditional(ns1);
-                r.addAdditional(ns2);
-                r.addAdditional(a1);
-                r.addAdditional(a2);
+                List<ResourceRecord> unique = new ArrayList<>();
+                for(ResourceRecord rr : params){
+                    r.addAdditional(rr);
+                    if(!unique.contains(rr)){
+                        unique.add(rr);
+                    }
+                }
 
                 List<ResourceRecord> all = r.getAdditionalList();
                 assertNotNull(all);
-                assertAll("Records",
-                        () -> assertEquals(cn1, all.get(0)),
-                        () -> assertEquals(cn3, all.get(1)),
-                        () -> assertEquals(ns1, all.get(2)),
-                        () -> assertEquals(a1, all.get(3)),
-                        () -> assertEquals(4, all.size())
-                );
-            } catch (ValidationException | UnknownHostException e) {
-                assert(false);
+
+                assertEquals(unique.size(), all.size());
+                assertIterableEquals(unique, all);
+            } catch (ValidationException e) {
+                fail();
             }
         }
 
@@ -182,40 +223,31 @@ class ResponseTest {
             }
         }
 
-        //Test addAnswer ignore duplicates
-        @Test @DisplayName("Test addAnswer ignore duplicates")
-        void addAnswerDuplicateValid(){
+        /**
+         * Test addAnswer ignore duplicates
+         * @param params list to test
+         */
+        @ParameterizedTest(name = "Test addAnswer ignore duplicates")
+        @ArgumentsSource(DuplicatesParamFactory.class)
+        void addAnswerDuplicateValid(List<ResourceRecord> params){
             Response r;
             try {
                 r = new Response(0, ".", RCode.NOERROR);
-                CName cn1 = new CName(".", 123, "good.com.");
-                CName cn2 = new CName(".", 123, "good.com.");
-                CName cn3 = new CName(".", 123, "good.com.q.");
-                CName cn4 = new CName(".", 123, "good.com.q.");
-                NS ns1 = new NS(".", 123, "good.server.");
-                NS ns2 = new NS(".", 123, "good.server.");
-                A a1 = new A(".", 123, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
-                A a2 = new A(".", 123, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
-                r.addAnswer(cn1);
-                r.addAnswer(cn2);
-                r.addAnswer(cn3);
-                r.addAnswer(cn4);
-                r.addAnswer(ns1);
-                r.addAnswer(ns2);
-                r.addAnswer(a1);
-                r.addAnswer(a2);
+                List<ResourceRecord> unique = new ArrayList<>();
+                for(ResourceRecord rr : params){
+                    r.addAnswer(rr);
+                    if(!unique.contains(rr)){
+                        unique.add(rr);
+                    }
+                }
 
                 List<ResourceRecord> all = r.getAnswerList();
                 assertNotNull(all);
-                assertAll("Records",
-                        () -> assertEquals(cn1, all.get(0)),
-                        () -> assertEquals(cn3, all.get(1)),
-                        () -> assertEquals(ns1, all.get(2)),
-                        () -> assertEquals(a1, all.get(3)),
-                        () -> assertEquals(4, all.size())
-                        );
-            } catch (ValidationException | UnknownHostException e) {
-                assert(false);
+
+                assertEquals(unique.size(), all.size());
+                assertIterableEquals(unique, all);
+            } catch (ValidationException e) {
+                fail();
             }
         }
 
@@ -241,8 +273,37 @@ class ResponseTest {
             }
         }
 
+
+        /**
+         * Test addNameServer ignore duplicates
+         * @param params list to test
+         */
+        @ParameterizedTest(name = "Test addNameServer ignore duplicates (1)")
+        @ArgumentsSource(DuplicatesParamFactory.class)
+        void addNameServerDuplicateValid(List<ResourceRecord> params){
+            Response r;
+            try {
+                r = new Response(0, ".", RCode.NOERROR);
+                List<ResourceRecord> unique = new ArrayList<>();
+                for(ResourceRecord rr : params){
+                    r.addNameServer(rr);
+                    if(!unique.contains(rr)){
+                        unique.add(rr);
+                    }
+                }
+
+                List<ResourceRecord> all = r.getNameServerList();
+                assertNotNull(all);
+
+                assertEquals(unique.size(), all.size());
+                assertIterableEquals(unique, all);
+            } catch (ValidationException e) {
+                fail();
+            }
+        }
+
         //Test addNameServer ignore duplicates
-        @Test @DisplayName("Test addNameServer ignore duplicates")
+        @Test @DisplayName("Test addNameServer ignore duplicates (2)")
         void addNameServerDuplicateValid(){
             Response r;
             try {
