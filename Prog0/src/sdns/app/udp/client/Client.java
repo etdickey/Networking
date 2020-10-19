@@ -86,8 +86,8 @@ public class Client {
                 //Check if query matches
                 if(q.getQuery().equals(r.getQuery())){
                     //handle non-zero error (rcode)
-                    if(r.getResponseCode() != RCode.NOERROR){
-                        err.println("ERROR: " + r.getResponseCode().getRCodeMessage());
+                    if(r.getRCode() != RCode.NOERROR){
+                        err.println("ERROR: " + r.getRCode().getRCodeMessage());
 
                         //remove from EL (this invalidates the list iterators, MUST EXIT LOOP)
                         expectedList.remove(q);
