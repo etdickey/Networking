@@ -2,10 +2,7 @@
 //Created: 10/1/20
 package sdns.app.udp.client;
 
-import sdns.serialization.Message;
-import sdns.serialization.Query;
-import sdns.serialization.Response;
-import sdns.serialization.ValidationException;
+import sdns.serialization.*;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -89,15 +86,9 @@ public class Client {
                 //Check if query matches
                 if(q.getQuery().equals(r.getQuery())){
                     //handle non-zero error (rcode)
-                    if(r.getResponseCode() != 0){
-                        switch(r.getResponseCode()){
-                            case 1: err.println("ERROR: Format error: " + r.toString()); break;
-                            case 2: err.println("ERROR: Server failure: " + r.toString()); break;
-                            case 3: err.println("ERROR: Name Error: " + r.toString()); break;
-                            case 4: err.println("ERROR: Not Implemented: " + r.toString()); break;
-                            case 5: err.println("ERROR: Refused: " + r.toString()); break;
-                            default: err.println("ERROR: Invalid opcode: " + r.toString());
-                        }
+                    if(r.getResponseCode() != RCode.NOERROR){
+                        err.println("ERROR: " + r.getResponseCode().getRCodeMessage());
+
                         //remove from EL (this invalidates the list iterators, MUST EXIT LOOP)
                         expectedList.remove(q);
 
