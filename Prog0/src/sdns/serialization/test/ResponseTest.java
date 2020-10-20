@@ -195,6 +195,41 @@ class ResponseTest {
             }
         }
 
+        /**
+         * Test addAdditional change after insertion
+         */
+        @Test @DisplayName("Test addAdditional change entry after insertion")
+        void addAdditionalValidChangeInside(){
+            Response r;
+            try {
+                r = new Response(0, ".", RCode.NOERROR);
+                CName cn = new CName(".", 5, "good.com.");
+                CName cn2 = new CName(".", 6, "good.com.");
+                CName cn2old = new CName(".", 6, "good.com.");
+                NS ns = new NS(".", 123, "good.server.");
+                A a = new A(".", 123, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
+                r.addAdditional(cn);
+                r.addAdditional(ns);
+                r.addAdditional(cn2);
+                r.addAdditional(a);
+
+                cn2.setTTL(5);
+
+                List<ResourceRecord> all = r.getAdditionalList();
+                assertNotNull(all);
+                assertAll("Records",
+                        () -> assertEquals(cn, all.get(0)),
+                        () -> assertEquals(ns, all.get(1)),
+                        () -> assertEquals(cn2old, all.get(2)),
+                        () -> assertEquals(a, all.get(3)),
+                        () -> assertEquals(4, all.size())
+                );
+            } catch (ValidationException | UnknownHostException e) {
+                fail();
+            }
+        }
+
+
         //Test addAnswer
         @Test @DisplayName("Test addAnswer")
         void addAnswerValid(){
@@ -251,6 +286,41 @@ class ResponseTest {
             }
         }
 
+        /**
+         * Test addAnswer change after insertion
+         */
+        @Test @DisplayName("Test addAnswer change entry after insertion")
+        void addAnswerValidChangeInside(){
+            Response r;
+            try {
+                r = new Response(0, ".", RCode.NOERROR);
+                CName cn = new CName(".", 5, "good.com.");
+                CName cn2 = new CName(".", 6, "good.com.");
+                CName cn2old = new CName(".", 6, "good.com.");
+                NS ns = new NS(".", 123, "good.server.");
+                A a = new A(".", 123, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
+                r.addAnswer(cn);
+                r.addAnswer(ns);
+                r.addAnswer(cn2);
+                r.addAnswer(a);
+
+                cn2.setTTL(5);
+
+                List<ResourceRecord> all = r.getAnswerList();
+                assertNotNull(all);
+                assertAll("Records",
+                        () -> assertEquals(cn, all.get(0)),
+                        () -> assertEquals(ns, all.get(1)),
+                        () -> assertEquals(cn2old, all.get(2)),
+                        () -> assertEquals(a, all.get(3)),
+                        () -> assertEquals(4, all.size())
+                );
+            } catch (ValidationException | UnknownHostException e) {
+                fail();
+            }
+        }
+
+
         //Test addNameServer
         @Test @DisplayName("Test addNameServer")
         void addNameServerValid(){
@@ -272,7 +342,6 @@ class ResponseTest {
                 assert(false);
             }
         }
-
 
         /**
          * Test addNameServer ignore duplicates
@@ -326,6 +395,40 @@ class ResponseTest {
                         );
             } catch (ValidationException e) {
                 assert(false);
+            }
+        }
+
+        /**
+         * Test addNameServer change after insertion
+         */
+        @Test @DisplayName("Test addNameServer change entry after insertion")
+        void addNameServerValidChangeInside(){
+            Response r;
+            try {
+                r = new Response(0, ".", RCode.NOERROR);
+                CName cn = new CName(".", 5, "good.com.");
+                CName cn2 = new CName(".", 6, "good.com.");
+                CName cn2old = new CName(".", 6, "good.com.");
+                NS ns = new NS(".", 123, "good.server.");
+                A a = new A(".", 123, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
+                r.addNameServer(cn);
+                r.addNameServer(ns);
+                r.addNameServer(cn2);
+                r.addNameServer(a);
+
+                cn2.setTTL(5);
+
+                List<ResourceRecord> all = r.getNameServerList();
+                assertNotNull(all);
+                assertAll("Records",
+                        () -> assertEquals(cn, all.get(0)),
+                        () -> assertEquals(ns, all.get(1)),
+                        () -> assertEquals(cn2old, all.get(2)),
+                        () -> assertEquals(a, all.get(3)),
+                        () -> assertEquals(4, all.size())
+                );
+            } catch (ValidationException | UnknownHostException e) {
+                fail();
             }
         }
     }

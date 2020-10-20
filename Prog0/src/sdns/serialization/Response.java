@@ -176,9 +176,8 @@ public class Response extends Message {
      */
     public Response addAnswer(ResourceRecord answer) throws ValidationException {
         if(answer == null){ throw new ValidationException("ERROR: addAnswer parameter cannot be null", "null"); }
-
         if(!this.answerList.contains(answer)) {
-            this.answerList.add(answer);
+            this.answerList.add((ResourceRecord) answer.clone());
         }
         return this;
     }
@@ -192,7 +191,7 @@ public class Response extends Message {
     public Response addNameServer(ResourceRecord nameServer) throws ValidationException {
         if(nameServer == null){ throw new ValidationException("ERROR: addNameServer parameter cannot be null", "null"); }
         if(!this.nameServerList.contains(nameServer)) {
-            this.nameServerList.add(nameServer);
+            this.nameServerList.add((ResourceRecord) nameServer.clone());
         }
         return this;
     }
@@ -206,7 +205,7 @@ public class Response extends Message {
     public Response addAdditional(ResourceRecord additional) throws ValidationException {
         if(additional == null){ throw new ValidationException("ERROR: addAdditional parameter cannot be null", "null"); }
         if(!this.additionalList.contains(additional)) {
-            this.additionalList.add(additional);
+            this.additionalList.add((ResourceRecord) additional.clone());
         }
         return this;
     }
