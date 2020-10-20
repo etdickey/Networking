@@ -2,10 +2,9 @@
 //Created: 9/18/20
 package sdns.serialization;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
-import java.util.List;
 
 import static sdns.serialization.IOUtils.*;
 
@@ -79,20 +78,29 @@ public class Query extends Message {
     /**
      * Finishes writing the encoded header based on which subtype it is
      *
-     * @param out the output array to write to
+     * @param out the output stream to write to
      */
     @Override
-    protected void writeHeader(List<Byte> out) {
-        //Write from QR to Response code
-        //0[000 0]001      0[000] [0000]
-        out.add((byte) 1); out.add((byte) 0);
-
-        //Write 0x0001
-        out.add((byte) 0); out.add((byte) 1);
-
-        //Write ANCount, NSCount, and ARCount
-        Collections.addAll(out, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0);
+    protected void writeHeader(ByteArrayOutputStream out) throws IOException {
+        out.write(new byte[]{
+                //Write from QR to Response code
+                //0[000 0]001      0[000] [0000]
+                1, 0,
+                //Write 0x0001
+                0, 1,
+                //Write ANCount, NSCount, and ARCount
+                0, 0, 0, 0, 0, 0
+        });
     }
+
+    /**
+     * Finishes writing the encoded data section based on which subtype it is
+     *
+     * @param out the output stream to write to
+     */
+    @Override
+    protected void writeData(ByteArrayOutputStream out) { }//do nothing
+
 
     /**
      * Returns a String representation

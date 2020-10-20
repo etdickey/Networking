@@ -6,7 +6,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -109,46 +108,41 @@ public class Response extends Message {
      *       16     ANCOUNT (unsigned) query(0, 0), response(*, *)
      *       16     NSCOUNT (unsigned) query(0, 0), response(*, *)
      *       16     ARCOUNT (unsigned) query(0, 0), response(*, *)
-     * @param out the output array to write to
+     * @param out the output stream to write to
      */
     @Override
-    protected void writeHeader(List<Byte> out) {
-        //Write from QR to Response code
-        //1[000 0]001        0[000] [this.response & 0x0F]
-        out.add((byte)0x81); out.add((byte) (this.responseCode.getRCodeValue() & 0x0F));
-
-        //Write 0x0001
-        out.add((byte) 0); out.add((byte) 1);
+    protected void writeHeader(ByteArrayOutputStream out) throws IOException {
+        out.write(new byte[]{
+                //Write from QR to Response code
+                //1[000 0]001        0[000] [this.response & 0x0F]
+                (byte) 0x81, (byte) (this.responseCode.getRCodeValue() & 0x0F),
+                //Write 0x0001
+                0, 1
+        });
 
         //Write ANCount, NSCount, and ARCount DISCOUNTING number of unknowns
-        out.addAll(Arrays.asList(writeShortBigEndian((short) this.answerList.stream()
+        out.write(writeShortBigEndian((short) this.answerList.stream()
                                                                 .filter(e -> !(e instanceof Unknown))
-                                                                .count())));
-        out.addAll(Arrays.asList(writeShortBigEndian((short) this.nameServerList.stream()
+                                                                .count()));
+        out.write(writeShortBigEndian((short) this.nameServerList.stream()
                                                                 .filter(e -> !(e instanceof Unknown))
-                                                                .count())));
-        out.addAll(Arrays.asList(writeShortBigEndian((short) this.additionalList.stream()
+                                                                .count()));
+        out.write(writeShortBigEndian((short) this.additionalList.stream()
                                                                 .filter(e -> !(e instanceof Unknown))
-                                                                .count())));
+                                                                .count()));
     }
 
     /**
      * Writes the encode Answer, Authority, and Additional sections to the output array
      * @param out output stream to write to
      */
-    public void writeAnswers(List<Byte> out) {
-        ByteArrayOutputStream outBuff = new ByteArrayOutputStream();
+    public void writeData(ByteArrayOutputStream out) {
         try {
-            encodeRRList(answerList, outBuff);
-            encodeRRList(nameServerList, outBuff);
-            encodeRRList(additionalList, outBuff);
+            encodeRRList(answerList, out);
+            encodeRRList(nameServerList, out);
+            encodeRRList(additionalList, out);
         } catch(IOException e){
             throw new RuntimeException("ERROR: internal encoding failure: ", e);
-        }
-
-        //Copy output stream to the output buffer
-        for(var i : outBuff.toByteArray()){
-            out.add(i);
         }
     }
     /*End Encode functionality*/

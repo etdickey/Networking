@@ -17,6 +17,8 @@ class ValidationUtils {
     static final int DOMAIN_NAME_LABEL_MAX_LEN = 63;
     //Max unsigned short
     static final int MAX_UNSIGNED_SHORT = 65535;
+    //Top bit is set for QR
+    public static final byte QR_BIT_SET = (byte) 0x80;
 
     /**
      * Checks if character is in the set of characters [a-zA-Z]

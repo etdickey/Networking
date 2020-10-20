@@ -3,14 +3,14 @@
 package sdns.serialization;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 
 import static sdns.serialization.IOUtils.*;
+import static sdns.serialization.ValidationUtils.QR_BIT_SET;
 import static sdns.serialization.ValidationUtils.validateDomainName;
 
 /**
@@ -81,9 +81,9 @@ public abstract class Message {
 
             Message toReturn;
             //decode the QR byte
-            if((temp & 0x80) == 0){
+            if((temp & QR_BIT_MASK) == 0){
                 toReturn = new Query(id, buff);
-            } else if((temp & 0x80) == 0x80) {
+            } else if((temp & QR_BIT_MASK) == QR_BIT_SET) {
                 toReturn = new Response(id, buff);
             } else {
                 throw new RuntimeException("INTERNAL ERROR");
@@ -142,39 +142,41 @@ public abstract class Message {
      * @return serialized message
      */
     public byte[] encode(){
-        List<Byte> out = new ArrayList<>();
-        //ID field in header
-        out.add((byte)(this.getID() >> 8));
-        out.add((byte)this.getID());
-        //rest of header
-        this.writeHeader(out);
-
-        //Write Query field
+        ByteArrayOutputStream bout = new ByteArrayOutputStream();
         try {
-            serializeDomainName(this.getQuery(), out);
-        } catch (ValidationException ignored) { }
-        out.add((byte) 0); out.add((byte) 0xFF);//0x00FF
-        out.add((byte) 0); out.add((byte) 1);//0x0001
+            //ID field in header
+            bout.write(new byte[]{(byte) (this.getID() >> 8), (byte) this.getID()});
+            //rest of header
+            this.writeHeader(bout);
 
-        //Add the Answer, NameServer, and Additional fields if a Response
-        if(this.getClass() == Response.class){
-            ((Response)this).writeAnswers(out);
-        }
+            //Write Query field
+            try {
+                serializeDomainName(this.getQuery(), bout);
+            } catch (ValidationException ignored) {
+            }
+            bout.write(new byte[]{
+                    0, (byte) 0xFF,//0x00FF
+                    0, 1//0x0001
+            });
 
-        //Copy list of bytes to buffer
-        byte[] buff = new byte[out.size()];
-        for(int i=0;i<out.size();i++){
-            buff[i] = out.get(i);
-        }
+            //Add the Answer, NameServer, and Additional fields if a Response
+            this.writeData(bout);
+        } catch(IOException ignored) {}
 
-        return buff;
+        return bout.toByteArray();
     }
 
     /**
      * Finishes writing the encoded header based on which subtype it is
      * @param out the output array to write to
      */
-    protected abstract void writeHeader(List<Byte> out);
+    protected abstract void writeHeader(ByteArrayOutputStream out) throws IOException;
+
+    /**
+     * Finishes writing the encoded data section based on which subtype it is
+     * @param out the output stream to write to
+     */
+    protected abstract void writeData(ByteArrayOutputStream out);
 
     /**
      * Get message ID
@@ -195,7 +197,9 @@ public abstract class Message {
      * @throws ValidationException if new id invalid
      */
     public Message setID(int id) throws ValidationException {
-        if(id < 0 || id > MAX_UNSIGNED_SHORT){ throw new ValidationException("ERROR: invalid id: " + id, id + ""); }
+        if(id < 0 || id > MAX_UNSIGNED_SHORT){
+            throw new ValidationException("ERROR: invalid id: " + id, id + "");
+        }
         this.id = id;
         return this;
     }

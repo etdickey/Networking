@@ -4,10 +4,7 @@ package sdns.serialization;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static sdns.serialization.IOUtils.*;
 import static sdns.serialization.ValidationUtils.validateDomainName;
@@ -131,7 +128,9 @@ public class MX extends ResourceRecord {
      */
     @Override
     protected List<Byte> serializeRData() {
-        List<Byte> rdataBytes = new ArrayList<>(Arrays.asList(writeShortBigEndian((short) this.preference)));
+        List<Byte> rdataBytes = new ArrayList<>(Arrays.asList(
+                toObject(writeShortBigEndian((short) this.preference))
+        ));
         try {
             serializeDomainName(this.exchange, rdataBytes);
         } catch (ValidationException e) {

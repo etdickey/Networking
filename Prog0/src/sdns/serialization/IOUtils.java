@@ -2,12 +2,11 @@
 //Created: 9/18/20
 package sdns.serialization;
 
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -24,6 +23,8 @@ class IOUtils {
     public static final int SHORT_BIT_MASK = 0x0000FFFF;
     //Bit mask to get a byte from an int
     public static final int BYTE_BIT_MASK = 0x000000FF;
+    //Bit mask to get the top bit from a byte
+    public static final byte QR_BIT_MASK = (byte) 0x80;
 
     /**
      * Checks if the top two bits are set (indicating the end of a label stream)
@@ -64,17 +65,54 @@ class IOUtils {
     }
 
     /**
+     * Calls serializeDomainName and writes byte list to bout
+     * @param name name to write to output stream
+     * @param bout output stream
+     * @throws ValidationException if invalid domain name
+     * @throws IOException if IO exception
+     */
+    static void serializeDomainName(String name, ByteArrayOutputStream bout) throws ValidationException, IOException {
+        List<Byte> outArr = new ArrayList<>();
+        serializeDomainName(name, outArr);
+        bout.write(listToArray(outArr));
+    }
+
+    /**
      * Writes a short (2 bytes) in a byte array
      * @param k the int to write
      * @return the short in Big Endian in a Byte array
      */
-    static Byte[] writeShortBigEndian(short k) {
-        Byte[] buff = new Byte[2];
+    static byte[] writeShortBigEndian(short k) {
+        byte[] buff = new byte[2];
         for(int i=0;i<2;i++){
             buff[i] = (byte)((k >> (1-i)*8) & 0x00FF);
         }
 
         return buff;
+    }
+
+    /**
+     * Converts byte[] -> Byte[]
+     * @param bytesPrim byte[]
+     * @return Byte[]
+     */
+    static Byte[] toObject(byte[] bytesPrim){
+        Byte[] bytes = new Byte[2];
+        Arrays.setAll(bytes, n -> bytesPrim[n]);
+        return bytes;
+    }
+
+    /**
+     * Converts List<Byte> -> byte[]
+     * @param bytes List<Byte>
+     * @return byte[]
+     */
+    static byte[] listToArray(List<Byte> bytes){
+        byte[] bytesPrim = new byte[bytes.size()];
+        for(int i=0;i<bytes.size(); i++){
+            bytesPrim[i] = bytes.get(i);
+        }
+        return bytesPrim;
     }
 
     /**
@@ -90,6 +128,7 @@ class IOUtils {
             }
         }
     }
+
 
     //input
     /**
