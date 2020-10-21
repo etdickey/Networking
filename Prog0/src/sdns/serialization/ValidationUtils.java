@@ -10,13 +10,13 @@ import java.util.Objects;
  * @author Ethan Dickey
  * @version 1.0
  */
-class ValidationUtils {
+public class ValidationUtils {
     //Max domain name length
-    static final int DOMAIN_NAME_MAX_LEN = 255;
+    public static final int DOMAIN_NAME_MAX_LEN = 255;
     //Max label length
-    static final int DOMAIN_NAME_LABEL_MAX_LEN = 63;
+    public static final int DOMAIN_NAME_LABEL_MAX_LEN = 63;
     //Max unsigned short
-    static final int MAX_UNSIGNED_SHORT = 65535;
+    public static final int MAX_UNSIGNED_SHORT = 65535;
     //Top bit is set for QR
     public static final byte QR_BIT_SET = (byte) 0x80;
 
@@ -58,7 +58,7 @@ class ValidationUtils {
      * @param domainName the domain name to validate
      * @return whether or not the domain name is valid based on the Specifications
      */
-    static boolean validateDomainName(String domainName){
+    public static boolean validateDomainName(String domainName){
         Objects.requireNonNull(domainName, "Domain names cannot be null");
 
         //Name: -- this applies to all domain name fields

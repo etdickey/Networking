@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.lang.System.err;
+import static java.lang.System.*;
 
 /**
  * SDNS UDP client that first sends all questions, records each ID/Question in ExpectedList (EL), and then
@@ -53,21 +53,29 @@ public class Client {
      * @param servPort server port
      * @param expectedList expected list to handle accordingly
      */
-    private static void handleTimeout(DatagramSocket sout, InetAddress servAddr, int servPort, List<Query> expectedList){
+    private static void handleTimeout(DatagramSocket sout, InetAddress servAddr, int servPort, List<Query> expectedList, boolean silent){
         //If retransmitted previously, print "No response: <question>" for each Question in the EL and terminate
         //  otherwise retransmit all queries in EL
-        if(hasTimedOut){
-            for(Query q : expectedList){
-                err.println("No response: " + q.getQuery());
+        if(hasTimedOut) {
+            if(!silent) {
+                for (Query q : expectedList) {
+                    err.println("No response: " + q.getQuery());
+                }
+                System.exit(1);
+            } else {
+                throw new RuntimeException("No responses for queries");
             }
-            System.exit(1);
         } else {
             hasTimedOut = true;
             try {
                 sendQueries(sout, servAddr, servPort, expectedList);
             } catch (IOException e) {
-                err.println("ERROR: I/O error while writing to socket: " + e.getMessage());
-                System.exit(1);
+                if(!silent){
+                    err.println("ERROR: I/O error while writing to socket: " + e.getMessage());
+                    System.exit(1);
+                } else {
+                    throw new RuntimeException("ERROR: I/O error while writing to socket: " + e.getMessage());
+                }
             }
         }
     }
@@ -78,7 +86,7 @@ public class Client {
      * @param r Response to validate
      * @return if it matches specifications
      */
-    private static boolean validateResponse(List<Query> expectedList, Response r){
+    private static boolean validateResponse(List<Query> expectedList, Response r, boolean silent){
         //find the response in expectedList
         for(var q : expectedList){
             //Check if ID matches
@@ -87,7 +95,7 @@ public class Client {
                 if(q.getQuery().equals(r.getQuery())){
                     //handle non-zero error (rcode)
                     if(r.getRCode() != RCode.NOERROR){
-                        err.println("ERROR: " + r.getRCode().getRCodeMessage());
+                        if(!silent) err.println("ERROR: " + r.getRCode().getRCodeMessage());
 
                         //remove from EL (this invalidates the list iterators, MUST EXIT LOOP)
                         expectedList.remove(q);
@@ -97,14 +105,14 @@ public class Client {
                         return true;
                     }
                 } else {
-                    err.println("Non-matching query: " + r.toString());
+                    if(!silent) err.println("Non-matching query: " + r.toString());
                     break;
                 }
             }
         }
 
         //handle no matching ID in EL
-        err.println("No such ID: " + r.toString());
+        if(!silent) err.println("No such ID: " + r.toString());
 
         return false;
     }
@@ -117,22 +125,30 @@ public class Client {
      * @param expectedList expected list to handle accordingly
      * @return the Response received, or null
      */
-    private static Response receiveResponse(DatagramSocket sout, InetAddress servAddr, int servPort, List<Query> expectedList){
+    private static Response receiveResponse(DatagramSocket sout, InetAddress servAddr, int servPort, List<Query> expectedList, boolean silent){
         //Construct a datagram packet to store the data
         DatagramPacket pack = new DatagramPacket(new byte[MAX_DNS_UDP_BYTES], MAX_DNS_UDP_BYTES);
         try {
             sout.receive(pack);
         } catch (SocketTimeoutException e) {
-            handleTimeout(sout, servAddr, servPort, expectedList);
+            handleTimeout(sout, servAddr, servPort, expectedList, silent);
             return null;
         } catch (IOException e) {
-            err.println("ERROR: I/O error while writing to socket: " + e.getMessage());
-            System.exit(1);
+            if(!silent){
+                err.println("ERROR: I/O error while writing to socket: " + e.getMessage());
+                System.exit(1);
+            } else {
+                throw new RuntimeException("ERROR: I/O error while writing to socket: " + e.getMessage(), e);
+            }
         }
 
         if (!pack.getAddress().equals(servAddr)) {// Check source
-            err.println("Received packet from an unknown source");
-            System.exit(1);
+            if(!silent){
+                err.println("Received packet from an unknown source");
+                System.exit(1);
+            } else {
+                throw new RuntimeException("Received packet from an unknown source");
+            }
         }
 
         //have a packet!
@@ -142,10 +158,10 @@ public class Client {
 
             //handle bad type
             Response r = null;
-            if(m instanceof Response && validateResponse(expectedList, (Response)m)){
+            if(m instanceof Response && validateResponse(expectedList, (Response)m, silent)){
                 r = (Response)m;
             } else {
-                err.println("Unexpected query: " + m.toString());
+                if(!silent) err.println("Unexpected query: " + m.toString());
             }
 
             return r;
@@ -158,12 +174,12 @@ public class Client {
             //As such, it is almost impossible to correctly identify every time .decode() does any of the specified
             //  behaviors and so it is not attempted to catch all of them, just most of them.
             if(e.getBadToken().toLowerCase().contains("too many")){
-                err.println("Packet too long");
-                err.println("Response: " + Arrays.toString(pack.getData()));
+                if(!silent) err.println("Packet too long");
+                if(!silent) err.println("Response: " + Arrays.toString(pack.getData()));
             } else if(e.getCause() instanceof EOFException || e.getBadToken().toLowerCase().contains("not long")){
-                err.println("Packet too short");
+                if(!silent) err.println("Packet too short");
             } else {
-                err.println("ERROR: " + e.getMessage());
+                if(!silent) err.println("ERROR: " + e.getMessage());
             }
 
             return null;
@@ -171,15 +187,27 @@ public class Client {
     }
 
     /**
-     * Main runner
-     * @param args args
+     * Alias for runClient without recording responses
+     * @param args ip, port, and query strings
+     * @return termination code
      */
-    public static void main(String[] args){
+    public static void runClient(String[] args){
+        runClient(args, false, new ArrayList<>());
+    }
+
+    /**
+     * Queries all questions in args
+     * @param args ip, port, and query strings
+     * @param silent whether or not to record the responses
+     * @param responsesContainer the container to stuff the responses into if recordResponses is true
+     */
+    public static void runClient(String[] args, boolean silent, List<Response> responsesContainer) throws IllegalArgumentException {
         final String usageError = "Usage: <IPv4/IPv6 server IP/name> <port> <1 or more query strings>";
         //The client command-line parameters are the server IP/name, server port, and one or more query strings
         if(args.length < 3){
             throw new IllegalArgumentException(usageError);
         }
+
 
         //get server IP/name and validate
         InetAddress serverAddress = null;
@@ -208,8 +236,12 @@ public class Client {
             socket.setSoTimeout(MAX_TIMEOUT_MS);//set timeout
         } catch (SocketException e) {
             //"if the socket could not be opened, or the socket could not bind to the specified local port"
-            err.println("ERROR: I/O Error while creating the socket or output stream: " + e.getMessage());
-            System.exit(1);
+            if(!silent){
+                err.println("ERROR: I/O Error while creating the socket or output stream: " + e.getMessage());
+                System.exit(1);
+            } else {
+                throw new RuntimeException("ERROR: I/O Error while creating the socket or output stream: " + e.getMessage(), e);
+            }
         }
 
         //Record each ID/Question in Expected List (EL)
@@ -221,7 +253,7 @@ public class Client {
                 //construct a query
                 el.add(new Query(i, args[i]));
             } catch (ValidationException e) {
-                err.println("Malformed question: " + args[i]);
+                if(!silent) err.println("Malformed question: " + args[i]);
             }
         }
 
@@ -234,18 +266,34 @@ public class Client {
         try {
             sendQueries(socket, serverAddress, serverPort, el);
         } catch (IOException e) {
-            err.println("ERROR: I/O error while writing to socket: " + e.getMessage());
-            System.exit(1);
+            if(!silent){
+                err.println("ERROR: I/O error while writing to socket: " + e.getMessage());
+                System.exit(1);
+            } else {
+                throw new RuntimeException("ERROR: I/O error while writing to socket: " + e.getMessage(), e);
+            }
         }
 
         //Then process responses as described in the Client Protocol (in the specification)
         while(0 < el.size()){
-            Response r = receiveResponse(socket, serverAddress, serverPort, el);
+            Response r = receiveResponse(socket, serverAddress, serverPort, el, silent);
             if(r != null){
                 //handle success
-                err.println(r.toString());
+                if(!silent) {
+                    out.println(r.toString());
+                } else {
+                    responsesContainer.add(r);
+                }
                 el = el.stream().filter(q -> q.getID() != r.getID()).collect(Collectors.toList());
             }
         }
+    }
+
+    /**
+     * Main runner
+     * @param args args
+     */
+    public static void main(String[] args){
+        runClient(args);
     }
 }
