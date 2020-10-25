@@ -26,8 +26,7 @@ public class MXTest {
     /**
      * test get type value (trivial) (DONE)
      */
-    @Test
-    @DisplayName("Get type value")
+    @Test @DisplayName("Get type value")
     void getTypeValue() {
         MX mx;
         try {

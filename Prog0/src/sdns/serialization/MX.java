@@ -11,6 +11,7 @@ import static sdns.serialization.ValidationUtils.validateDomainName;
 
 /**
  * Represents a MX and provides serialization/deserialization
+ * @author Ethan Dickey
  *   Credit: Dr. Donahoo of Baylor University for comments and API
  * @version 1.0
  */
