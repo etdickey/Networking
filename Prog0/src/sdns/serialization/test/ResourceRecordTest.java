@@ -13,6 +13,7 @@ import sdns.serialization.*;
 import sdns.serialization.test.factories.DomainNameTestFactory;
 import sdns.serialization.test.factories.PreferenceTestFactory;
 import sdns.serialization.test.factories.TTLTestFactory;
+import sdns.serialization.test.factories.VisibleAsciiTestFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -601,45 +603,7 @@ class ResourceRecordTest {
             assertThrows(ValidationException.class, () -> ResourceRecord.decode(b));
         }
 
-        /**
-         * Tests preferences in the MX object type
-         */
-        @Nested
-        class DecodeMXInvalidPreference extends PreferenceTestFactory{
-            @Override
-            protected boolean getTestInvalid() {
-                return false;
-            }
-
-            /**
-             * Factory method for calling the appropriate function you want to test for preference validity
-             *
-             * @param pref preference to test
-             * @return the result of a getPreference on the respective object
-             * @throws ValidationException if invalid object
-             */
-            @Override
-            protected int setGetPreference(int pref) throws ValidationException {
-                byte[] buff = { 0,//name
-                        0, 15,//type
-                        0, 1,//0x0001
-                        0, 0, 0, 0,//ttl
-                        0, 3,//RDLen
-                        (byte)(pref >> 8), (byte)pref, //preference
-                        0//exchange
-                };
-                ByteArrayInputStream b = new ByteArrayInputStream(buff);
-                ResourceRecord rr = null;
-                try {
-                    rr = ResourceRecord.decode(b);
-                } catch (IOException e) {
-                    fail();//oops
-                }
-
-                assert(rr instanceof MX);
-                return ((MX)rr).getPreference();
-            }
-        }
+        //invalid MX preference tests aren't possible (unsigned int, 2 bytes)
 
         /**
          * Tests for invalid domain names in MX RData Exchange
@@ -686,7 +650,125 @@ class ResourceRecordTest {
             }
         }
 
-        //todo: test invalid CAA fields
+        /**
+         * Test decoding invalid CAA fields
+         *   Invalid issuer is tested in the nested class for testing valid issuer in DecodeValid
+         */
+        @Nested
+        class TestInvalidCAAFields {
+            /**
+             * Tests for invalid values in the CAA header fields
+             */
+            @Nested
+            class TestInvalidCAAHeader{
+                /**
+                 * 0x00 field
+                 */
+                @ParameterizedTest(name = "Invalid 0x0")
+                @ValueSource(bytes = {1, 5, 127, -1, -128})
+                void testInvalid0(byte b){
+                    byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
+                            1, 1,
+                            0, 1, //0x0001
+                            0, 0, 0, 0,
+                            0, 23,//rdlen
+                            b, 5, 'i', 's', 's', 'u', 'e',
+                            '0', 'a', 'c', '%', 'f', 'M', '>', '<', '+', '@', '\\', '\"', ')', '-', '_', '|'};
+                    assertThrows(ValidationException.class, () -> ResourceRecord.decode(new ByteArrayInputStream(buff)));
+                }
+
+                /**
+                 * 0x05 field
+                 */
+                @ParameterizedTest(name = "Invalid 0x0")
+                @ValueSource(bytes = {0, 1, 4, 6, 10, 127, -1, -128})
+                void testInvalid1(byte b){
+                    byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
+                            1, 1,
+                            0, 1, //0x0001
+                            0, 0, 0, 0,
+                            0, 23,//rdlen
+                            0, b, 'i', 's', 's', 'u', 'e',
+                            '0', 'a', 'c', '%', 'f', 'M', '>', '<', '+', '@', '\\', '\"', ')', '-', '_', '|'};
+                    assertThrows(ValidationException.class, () -> ResourceRecord.decode(new ByteArrayInputStream(buff)));
+                }
+
+                /**
+                 * 'i' field
+                 */
+                @Test @DisplayName("Invalid 'i'")
+                void testInvalid2(){
+                    byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
+                            1, 1,
+                            0, 1, //0x0001
+                            0, 0, 0, 0,
+                            0, 23,//rdlen
+                            0, 5, 's', 's', 's', 'u', 'e',
+                            '0', 'a', 'c', '%', 'f', 'M', '>', '<', '+', '@', '\\', '\"', ')', '-', '_', '|'};
+                    assertThrows(ValidationException.class, () -> ResourceRecord.decode(new ByteArrayInputStream(buff)));
+                }
+
+                /**
+                 * 's' field (1st)
+                 */
+                @Test @DisplayName("Invalid 's'(1st)")
+                void testInvalid3(){
+                    byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
+                            1, 1,
+                            0, 1, //0x0001
+                            0, 0, 0, 0,
+                            0, 23,//rdlen
+                            0, 5, 'i', 'i', 's', 'u', 'e',
+                            '0', 'a', 'c', '%', 'f', 'M', '>', '<', '+', '@', '\\', '\"', ')', '-', '_', '|'};
+                    assertThrows(ValidationException.class, () -> ResourceRecord.decode(new ByteArrayInputStream(buff)));
+                }
+
+                /**
+                 * 's' field (2nd)
+                 */
+                @Test @DisplayName("Invalid 's'(2nd)")
+                void testInvalid4(){
+                    byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
+                            1, 1,
+                            0, 1, //0x0001
+                            0, 0, 0, 0,
+                            0, 23,//rdlen
+                            0, 5, 'i', 's', 'u', 'u', 'e',
+                            '0', 'a', 'c', '%', 'f', 'M', '>', '<', '+', '@', '\\', '\"', ')', '-', '_', '|'};
+                    assertThrows(ValidationException.class, () -> ResourceRecord.decode(new ByteArrayInputStream(buff)));
+                }
+
+                /**
+                 * 'u' field
+                 */
+                @Test @DisplayName("Invalid 'u'")
+                void testInvalid5(){
+                    byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
+                            1, 1,
+                            0, 1, //0x0001
+                            0, 0, 0, 0,
+                            0, 23,//rdlen
+                            0, 5, 'i', 's', 's', 'e', 'e',
+                            '0', 'a', 'c', '%', 'f', 'M', '>', '<', '+', '@', '\\', '\"', ')', '-', '_', '|'};
+                    assertThrows(ValidationException.class, () -> ResourceRecord.decode(new ByteArrayInputStream(buff)));
+                }
+
+                /**
+                 * 'e' field
+                 */
+                @Test @DisplayName("Invalid 'e'")
+                void testInvalid6(){
+                    byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
+                            1, 1,
+                            0, 1, //0x0001
+                            0, 0, 0, 0,
+                            0, 23,//rdlen
+                            0, 5, 'i', 's', 's', 'u', 'u',
+                            '0', 'a', 'c', '%', 'f', 'M', '>', '<', '+', '@', '\\', '\"', ')', '-', '_', '|'};
+                    assertThrows(ValidationException.class, () -> ResourceRecord.decode(new ByteArrayInputStream(buff)));
+                }
+            }
+        }
 
         /**
          * Tests invalid label fields in the name domain name field
@@ -1080,9 +1162,116 @@ class ResourceRecordTest {
             }
         }
 
-        //todo:: decode preference and check for proper decoding
+        /**
+         * Tests preferences in the MX object type
+         */
+        @Nested
+        class DecodeMXInvalidPreference extends PreferenceTestFactory{
+            @Override
+            protected boolean getTestInvalid() {
+                return false;
+            }
 
-        //todo:: CAA fields valid testing
+            /**
+             * Factory method for calling the appropriate function you want to test for preference validity
+             *
+             * @param pref preference to test
+             * @return the result of a getPreference on the respective object
+             * @throws ValidationException if invalid object
+             */
+            @Override
+            protected int setGetPreference(int pref) throws ValidationException {
+                byte[] buff = { 0,//name
+                        0, 15,//type
+                        0, 1,//0x0001
+                        0, 0, 0, 0,//ttl
+                        0, 3,//RDLen
+                        (byte)(pref >> 8), (byte)pref, //preference
+                        0//exchange
+                };
+                ByteArrayInputStream b = new ByteArrayInputStream(buff);
+                ResourceRecord rr = null;
+                try {
+                    rr = ResourceRecord.decode(b);
+                } catch (IOException e) {
+                    fail();//oops
+                }
+
+                assert(rr instanceof MX);
+                return ((MX)rr).getPreference();
+            }
+        }
+
+
+        /**
+         * Test valid AND invalid CAA issuer
+         */
+        @Nested
+        class TestCAAIssuer extends VisibleAsciiTestFactory {
+            /**
+             * Test too short
+             */
+            @Test @DisplayName("Too short header")
+            void testShortHeader(){
+                byte[] bout = new byte[]{1, 'o', 0,//name
+                        1, 1,//type
+                        0, 1,//0x0001
+                        0, 0, 0, 0,//ttl
+                        0, 5,//rdlen
+                        0, 5, 'i', 's', 's'//etc
+                };
+                assertThrows(ValidationException.class, () -> ResourceRecord.decode(new ByteArrayInputStream(bout)));
+            }
+
+            /**
+             * Factory method for calling the appropriate function you want to test for visible name validity
+             *
+             * @param name name to test
+             * @return the result of a getName on the respective object
+             * @throws ValidationException if invalid domain name
+             */
+            @Override
+            protected String setGetVisibleName(String name) throws ValidationException {
+                ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                ResourceRecord rr = null;
+
+                //insert rest of bytes here
+                try {
+                    bout.write(new byte[]{ 1, 'o', 0,//name
+                            1, 1,//type
+                            0, 1,//0x0001
+                            0, 0, 0, 0});//ttl
+
+                    //convert name to byte array
+                    int rdlen = 7 + name.getBytes().length;
+                    bout.write((byte)(rdlen >> 8));
+                    bout.write((byte)rdlen);
+                    bout.write(new byte[]{0, 5, 'i', 's', 's', 'u', 'e'});
+                    bout.write(name.getBytes());
+
+                    ByteArrayInputStream bstream = new ByteArrayInputStream(bout.toByteArray());
+                    rr = ResourceRecord.decode(bstream);
+                } catch (IOException e) {
+                    fail();
+                }
+
+                assert(rr instanceof CAA);
+                return ((CAA)rr).getIssuer();
+            }
+
+            /**
+             * Allows the concrete class to specify which exception it wants to be thrown when a
+             * null string is passed to the function
+             *
+             * @return class to throw
+             */
+            @Override
+            protected Class<? extends Throwable> getNullThrowableType() {
+                //this is actually insignificant, it throws this in this function,
+                //  not in decode since null isn't allowed into the input stream
+                return NullPointerException.class;
+            }
+        }
 
         //The following 4 tests test for the correct type value
         @Test @DisplayName("Test type 1")
@@ -1147,7 +1336,7 @@ class ResourceRecordTest {
                 assert(temp != null);
                 assertEquals(MX.class, temp.getClass());
             } catch (ValidationException | IOException e) {
-                assert(false);
+                fail();
             }
         }
         @Test @DisplayName("Test type 28")
@@ -1180,7 +1369,7 @@ class ResourceRecordTest {
                 assert(temp != null);
                 assertEquals(CAA.class, temp.getClass());
             } catch (ValidationException | IOException e) {
-                assert(false);
+                fail();
             }
         }
 

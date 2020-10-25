@@ -52,8 +52,8 @@ public class CAA extends ResourceRecord {
         //RDLength
         int rdlen = readUnsignedShortBigEndian(in);
 
-        if(rdlen < HEADER_CAA_WIDTH_BYTES + 1){
-            throw new ValidationException("ERROR: RDLen too small: " + rdlen, rdlen + "");
+        if(rdlen < HEADER_CAA_WIDTH_BYTES){//not +1 because issuer can be empty
+            throw new ValidationException("ERROR: RDLen/CAA header too small: " + rdlen, rdlen + "");
         }
 
         //RData
@@ -69,7 +69,7 @@ public class CAA extends ResourceRecord {
         //issue
         StringBuilder tempIssuer = new StringBuilder();
         for(int i=0; i<rdlen-HEADER_CAA_WIDTH_BYTES; i++){
-            tempIssuer.append(readByte(in, "when reading issuer"));
+            tempIssuer.append((char)readByte(in, "when reading issuer"));
         }
         this.setIssuer(tempIssuer.toString());
     }

@@ -95,7 +95,7 @@ public abstract class VisibleAsciiTestFactory {
      * Null visible name test (with variable throwbale class)
      */
     @Test @DisplayName("Null")
-    void testNullDomainName(){
+    void testNullName(){
         assertThrows(this.getNullThrowableType(), () -> this.setGetVisibleName(null));
     }
 
