@@ -19,6 +19,9 @@ public class ValidationUtils {
     public static final int MAX_UNSIGNED_SHORT = 65535;
     //Top bit is set for QR
     public static final byte QR_BIT_SET = (byte) 0x80;
+    //Min and max ascii text encodings
+    private static final byte ASCII_VISIBLE_MIN = 0x21;
+    private static final byte ASCII_VISIBLE_MAX = 0x7E;
 
     /**
      * Checks if character is in the set of characters [a-zA-Z]
@@ -118,4 +121,34 @@ public class ValidationUtils {
 
         return true;
     }
+
+    /**
+     * Validates that every part of the string is a visible ascii character
+     * @param str str to check
+     * @return if all characters are visible ascii characters (individually)
+     */
+    public static boolean validateVisibleAscii(String str){
+        if(str.length() == 0) return false;
+        for(int i=0; i<str.length(); i++){
+            if(ASCII_VISIBLE_MAX < str.charAt(i) || str.charAt(i) < ASCII_VISIBLE_MIN){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    //used ascii codes:
+    /*
+     ResourceRecord : 9857
+       A            : 2749
+       AAAA         : 6577
+       CAA          : 8887
+       CName        : 31
+       MX           : 1039
+       NS           : 1019
+       Unknown      : 1087
+     Message        : 7499
+       Query        : 5749
+       Response     : 6619
+     */
 }

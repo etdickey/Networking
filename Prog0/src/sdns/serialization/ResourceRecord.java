@@ -29,6 +29,7 @@ public abstract class ResourceRecord implements Cloneable {
     protected static final int A_TYPE_VALUE = 1;
     protected static final int AAAA_TYPE_VALUE = 28;
     protected static final int MX_TYPE_VALUE = 15;
+    protected static final int CAA_TYPE_VALUE = 257;
 
     //RR name and TimeToLive (TTL)
     private String name = null;
@@ -99,6 +100,7 @@ public abstract class ResourceRecord implements Cloneable {
             case (short) A_TYPE_VALUE: toReturn = new A(name, in); break;
             case (short) AAAA_TYPE_VALUE: toReturn = new AAAA(name, in); break;
             case (short) MX_TYPE_VALUE: toReturn = new MX(name, in); break;
+            case (short) CAA_TYPE_VALUE: toReturn = new CAA(name, in); break;
             default: toReturn = new Unknown(name, type, in); break;
         }
 
