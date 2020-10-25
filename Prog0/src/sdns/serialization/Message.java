@@ -119,7 +119,7 @@ public abstract class Message implements Cloneable {
         }
 
         if(temp2 != 0x0001){
-            throw new ValidationException("ERROR: invalid 0x00FF", temp2 + "");
+            throw new ValidationException("ERROR: invalid 0x0001", temp2 + "");
         }
     }
 
@@ -152,8 +152,8 @@ public abstract class Message implements Cloneable {
             //Write Query field
             try {
                 serializeDomainName(this.getQuery(), bout);
-            } catch (ValidationException ignored) {
-            }
+            } catch (ValidationException ignored) { }
+
             bout.write(new byte[]{
                     0, (byte) 0xFF,//0x00FF
                     0, 1//0x0001

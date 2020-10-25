@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import sdns.serialization.*;
 import sdns.serialization.test.factories.DomainNameTestFactory;
@@ -241,6 +242,11 @@ class MessageTest {
             };
             assertThrows(ValidationException.class, () -> Message.decode(buff));
         }
+        @Test @DisplayName("Basic header test error short id")
+        void queryDecodeMal8(){
+            byte[] buff = { 0 };
+            assertThrows(ValidationException.class, () -> Message.decode(buff));
+        }
     }
 
     /**
@@ -358,6 +364,57 @@ class MessageTest {
                     3, 'f', 'o', 'o', -64, 5,//query
                     0, -1,//0x00FF
                     0, 1  //0x0001
+            };
+            assertThrows(ValidationException.class, () -> Message.decode(buff));
+        }
+
+        //Basic query test invalid question 0x00FF
+        @ParameterizedTest(name = "Basic query test invalid Question 0x00FF")
+        @CsvSource({"-1,-1", "-1,0", "0,-2", "0,0", "0,127"})
+        void queryDecodeInvalid8(byte b1, byte b2){
+            byte[] buff = { 0, 0,//id
+                    0, 0, //0 0000 [ignored bit]x4 000 0000
+                    0, 1, //0x0001
+                    0, 0, //ANCount
+                    0, 0, //NSCount
+                    0, 0, //ARCount
+                    3, 'f', 'o', 'o', -64, 5,//query
+                    b1, b2,//0x00FF
+                    0, 1  //0x0001
+            };
+            assertThrows(ValidationException.class, () -> Message.decode(buff));
+        }
+
+        //Basic query test invalid question 0x0001
+        @ParameterizedTest(name = "Basic query test invalid Question 0x0001")
+        @CsvSource({"-1,-1", "-1,0", "0,-2", "0,0", "0,127"})
+        void queryDecodeInvalid9(byte b1, byte b2){
+            byte[] buff = { 0, 0,//id
+                    0, 0, //0 0000 [ignored bit]x4 000 0000
+                    0, 1, //0x0001
+                    0, 0, //ANCount
+                    0, 0, //NSCount
+                    0, 0, //ARCount
+                    3, 'f', 'o', 'o', -64, 5,//query
+                    0, -1,//0x00FF
+                    b1, b2  //0x0001
+            };
+            assertThrows(ValidationException.class, () -> Message.decode(buff));
+        }
+
+        //Basic query test too long of an input stream
+        @Test @DisplayName("Basic query test too long")
+        void queryDecodeInvalid10(){
+            byte[] buff = { 0, 0,//id
+                    0, 0, //0 0000 [ignored bit]x4 000 0000
+                    0, 1, //0x0001
+                    0, 0, //ANCount
+                    0, 0, //NSCount
+                    0, 0, //ARCount
+                    3, 'f', 'o', 'o', -64, 5,//query
+                    0, -1,//0x00FF
+                    0, 1,  //0x0001
+                    0//excess
             };
             assertThrows(ValidationException.class, () -> Message.decode(buff));
         }
