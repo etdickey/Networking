@@ -128,7 +128,7 @@ public class ValidationUtils {
      * @return if all characters are visible ascii characters (individually)
      */
     public static boolean validateVisibleAscii(String str){
-        if(str.length() == 0) return false;
+        if(str.length() == 0) return true;
         for(int i=0; i<str.length(); i++){
             if(ASCII_VISIBLE_MAX < str.charAt(i) || str.charAt(i) < ASCII_VISIBLE_MIN){
                 return false;
@@ -137,7 +137,7 @@ public class ValidationUtils {
         return true;
     }
 
-    //used ascii codes:
+    //used prime numbers (in hash code):
     /*
      ResourceRecord : 9857
        A            : 2749

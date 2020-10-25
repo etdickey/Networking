@@ -27,7 +27,7 @@ public abstract class VisibleAsciiTestFactory {
      * @param name visible name to test
      */
     @ParameterizedTest(name = "Visible name = {0}")
-    @ValueSource(strings = {".", "foo.com.", "asdf", "asdf.].", "asdf..", "www.baylor.edu/", "..",
+    @ValueSource(strings = {"", ".", "foo.com.", "asdf", "asdf.].", "asdf..", "www.baylor.edu/", "..",
             "asdf.asdf", "f0-9.c0m-.", "-a.f", "-.", "-",
             "foo.", "foo.com.", "f0-9.c0m.", "google.com.", "www.baylor.edu.", "f0.c-0.", ".", "f-0.", "f-0a.",
             "asdf;lkj!@#$%^&*()_+~`1234567890-=qwertyuiop[]\\QWERTYUIOP{}|asdfghjkl;'ASDFGHJKL:\"zxcvbnm,./ZXCVBNM<>?",
@@ -69,7 +69,7 @@ public abstract class VisibleAsciiTestFactory {
      * @param name visible name to test
      */
     @ParameterizedTest(name = "Invisible name = {0}")
-    @ValueSource(strings = {"", "aasdf" + '\n' + "asdf", " ", "              ", "asdfqwer ", "#$%^Dasdf\n",
+    @ValueSource(strings = {"aasdf" + '\n' + "asdf", " ", "              ", "asdfqwer ", "#$%^Dasdf\n",
             "aasdf" + '\r', "aasdf" + '\t', "aasdf" + '\b',  "aasdf" + '\f', "Ẵ.Ẓ.㛃.⭐.⭕.", "asdf.Ƞ."
     })
     void testInvisibleName(String name){
