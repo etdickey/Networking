@@ -20,15 +20,6 @@ public class Unknown extends ResourceRecord {
     private int type;
 
     /**
-     * Constructs an Unknown type based on the given variables
-     * @param name RR name
-     * @param ttl RR TTL
-     * @param type RR type
-     * @throws ValidationException if validation fails (see specification), including null name
-     */
-    protected Unknown(String name, int ttl, int type) throws ValidationException { super(name, ttl); this.type = type; }
-
-    /**
      * Finishes parsing an Unknown ResourceRecord from the input stream (including clearing the input stream
      *  to the end of the RR)
      * @param name RR name
