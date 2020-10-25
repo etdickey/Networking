@@ -104,7 +104,7 @@ public class CName extends ResourceRecord {
             serializeDomainName(this.getCanonicalName(), rdataBytes);
         } catch (ValidationException e) {
             //Do nothing
-//            throw new ValidationException("WARN WARN WARN: \"CANONICALNAME\" FIELD DOES NOT CONTAIN A VALID DOMAIN NAME", this.getName());
+//            "WARN WARN WARN: \"CANONICALNAME\" FIELD DOES NOT CONTAIN A VALID DOMAIN NAME";
         }
 
         return rdataBytes;
