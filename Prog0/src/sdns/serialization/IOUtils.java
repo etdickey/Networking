@@ -18,7 +18,7 @@ import static sdns.serialization.ValidationUtils.validateDomainName;
  * @author Ethan Dickey
  * @version 1.0
  */
-class IOUtils {
+public class IOUtils {
     //Bit mask to get a short from an int
     public static final int SHORT_BIT_MASK = 0x0000FFFF;
     //Bit mask to get a byte from an int
@@ -82,7 +82,7 @@ class IOUtils {
      * @param k the int to write
      * @return the short in Big Endian in a Byte array
      */
-    static byte[] writeShortBigEndian(short k) {
+    public static byte[] writeShortBigEndian(short k) {
         byte[] buff = new byte[2];
         for(int i=0;i<2;i++){
             buff[i] = (byte)((k >> (1-i)*8) & 0x00FF);
