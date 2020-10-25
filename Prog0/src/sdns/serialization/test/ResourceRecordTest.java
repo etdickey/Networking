@@ -120,7 +120,7 @@ class ResourceRecordTest {
     //  input too long, too short, null, invalid characters
     //  case insensitivity
     /**
-     * Tests invalid decodes
+     * Tests invalid decodes (DONE)
      */
     @Nested
     class DecodeValidationErrorInvalid {
@@ -635,12 +635,58 @@ class ResourceRecordTest {
                 } catch (IOException e) {
                     fail();//oops
                 }
-                System.out.println("Pref: " + (byte)(pref >> 8) + " " + (byte)pref);
+
                 assert(rr instanceof MX);
                 return ((MX)rr).getPreference();
             }
         }
 
+        /**
+         * Tests for invalid domain names in MX RData Exchange
+         * @param name invalid name to try
+         */
+        @ParameterizedTest(name = "Invalid rdata = {0}")
+        @ValueSource(strings = {"", "asdf", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.⭐.⭕.",
+                "-a.f", "-.", "-",
+                "a234567890123456789012345678901234567890123456789012345678901234.",//64
+                "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
+                        "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
+                        "a2345678901."//256
+        })
+        void decodeMXExchangeInvalid(String name){
+            ArrayList<Byte> b = new ArrayList<>();
+            ArrayList<Byte> a = new ArrayList<>();
+
+            //insert rest of bytes here
+            Collections.addAll(a, (byte)1, (byte)'o', (byte)0,
+                    (byte)0, (byte)15,
+                    (byte)0, (byte)1,
+                    (byte)0, (byte)0, (byte)0, (byte)0);
+
+            serialize(name, b);
+
+            Collections.addAll(b, (byte)0, (byte)205);//add preference
+            a.add((byte)0);
+            a.add((byte)b.size());
+            a.addAll(b);
+
+
+            byte[] buff = new byte[a.size()];
+            for(int i=0;i<a.size();i++){
+                buff[i] = a.get(i);
+            }
+
+            ByteArrayInputStream bstream = new ByteArrayInputStream(buff);
+            try{
+                ResourceRecord.decode(bstream);
+            } catch(ValidationException | EOFException e){
+                assert(true);
+            } catch(IOException e){
+                assert(false);
+            }
+        }
+
+        //todo: test invalid CAA fields
 
         /**
          * Tests invalid label fields in the name domain name field
@@ -789,14 +835,14 @@ class ResourceRecordTest {
                 "foo.", "foo.com.", "f0-9.c0m.", "google.com.", "www.baylor.edu.", "f0.c-0.", ".", "f-0.", "f-0a."})
         void decodeRDataNS(String name){
             /*
-            //foo. = 3 102, 111, 111, 192, 5 //-64 signed = 192 unsigned
+            foo. = 3 102, 111, 111, 192, 5 //-64 signed = 192 unsigned
             Valid data:
-            byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
-                                0, 2,
-                                0, 1, //0x0001
-                                0, 0, 0, 0,
-                                0, 6,
-                                3, 'f', 'o', 'o', -64, 5};//"foo."
+            3, 'f', 'o', 'o', -64, 5,
+                0, 2,
+                0, 1, //0x0001
+                0, 0, 0, 0,
+                0, 6,
+                3, 'f', 'o', 'o', -64, 5//"foo."
              */
             ArrayList<Byte> b = new ArrayList<>();
             ArrayList<Byte> a = new ArrayList<>();
@@ -840,14 +886,14 @@ class ResourceRecordTest {
                 "foo.", "foo.com.", "f0-9.c0m.", "google.com.", "www.baylor.edu.", "f0.c-0.", ".", "f-0.", "f-0a."})
         void decodeRDataCName(String name){
             /*
-            //foo. = 3 102, 111, 111, 192, 5 //-64 signed = 192 unsigned
+            foo. = 3 102, 111, 111, 192, 5 //-64 signed = 192 unsigned
             Valid data:
-            byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
-                                0, 2,
-                                0, 1, //0x0001
-                                0, 0, 0, 0,
-                                0, 6,
-                                3, 'f', 'o', 'o', -64, 5};//"foo."
+            3, 'f', 'o', 'o', -64, 5,
+                0, 2,
+                0, 1, //0x0001
+                0, 0, 0, 0,
+                0, 6,
+                3, 'f', 'o', 'o', -64, 5//"foo."
              */
             ArrayList<Byte> b = new ArrayList<>();
             ArrayList<Byte> a = new ArrayList<>();
@@ -981,6 +1027,63 @@ class ResourceRecordTest {
             }
         }
 
+        /**
+         * Test valid domain names in MX RData Exchange
+         * @param name valid name
+         */
+        @ParameterizedTest(name = "Valid name = {0}")
+        @ValueSource(strings = {"a23456789012345678901234567890123456789012345678901234567890123.",//63
+                "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
+                        "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
+                        "a234567890.",//255
+                "foo.", "foo.com.", "f0-9.c0m.", "google.com.", "www.baylor.edu.", "f0.c-0.", ".", "f-0.", "f-0a."})
+        void decodeRDataMXExchange(String name){
+            /*
+            //foo. = 3 102, 111, 111, 192, 5 //-64 signed = 192 unsigned
+            Valid data:
+             3, 'f', 'o', 'o', -64, 5,
+                0, 2,
+                0, 1, //0x0001
+                0, 0, 0, 0,
+                0, 6,
+                3, 'f', 'o', 'o', -64, 5//"foo."
+             */
+            ArrayList<Byte> b = new ArrayList<>();
+            ArrayList<Byte> a = new ArrayList<>();
+
+            //insert rest of bytes here
+            Collections.addAll(a, (byte)1, (byte)'o', (byte)0,//name
+                    (byte)0, (byte)15,//type
+                    (byte)0, (byte)1,//0x0001
+                    (byte)0, (byte)0, (byte)0, (byte)0);//ttl
+
+            serialize(name, b);
+            b.add(0, (byte)205);//add preference
+            b.add(0, (byte)0);
+            a.add((byte)(b.size() >> 8));//rdlen
+            a.add((byte)b.size());//rdata
+            a.addAll(b);
+
+
+            byte[] buff = new byte[a.size()];
+            for(int i=0;i<a.size();i++){
+                buff[i] = a.get(i);
+            }
+
+            ByteArrayInputStream bstream = new ByteArrayInputStream(buff);
+            try {
+                ResourceRecord temp = ResourceRecord.decode(bstream);
+                assert(temp != null);
+                assertEquals(((MX)temp).getExchange(), name);
+            } catch (ValidationException | IOException e) {
+                assert(false);
+            }
+        }
+
+        //todo:: decode preference and check for proper decoding
+
+        //todo:: CAA fields valid testing
+
         //The following 4 tests test for the correct type value
         @Test @DisplayName("Test type 1")
         void decodeA(){
@@ -1030,6 +1133,23 @@ class ResourceRecordTest {
                 assert(false);
             }
         }
+        @Test @DisplayName("Test type 15")
+        void decodeMX(){
+            byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
+                    0, 15,
+                    0, 1, //0x0001
+                    0, 0, 0, 0,
+                    0, 8,//rdlen
+                    1, 1,//preference
+                    3, 'f', 'o', 'o', -64, 5};//exchange
+            try {
+                ResourceRecord temp = ResourceRecord.decode(new ByteArrayInputStream(buff));
+                assert(temp != null);
+                assertEquals(MX.class, temp.getClass());
+            } catch (ValidationException | IOException e) {
+                assert(false);
+            }
+        }
         @Test @DisplayName("Test type 28")
         void decodeAAAA(){
             byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
@@ -1042,6 +1162,23 @@ class ResourceRecordTest {
                 ResourceRecord temp = ResourceRecord.decode(new ByteArrayInputStream(buff));
                 assert(temp != null);
                 assertEquals(AAAA.class, temp.getClass());
+            } catch (ValidationException | IOException e) {
+                assert(false);
+            }
+        }
+        @Test @DisplayName("Test type 257")
+        void decodeCAA(){
+            byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
+                    1, 1,
+                    0, 1, //0x0001
+                    0, 0, 0, 0,
+                    0, 23,//rdlen
+                    0, 5, 'i', 's', 's', 'u', 'e',
+                    '0', 'a', 'c', '%', 'f', 'M', '>', '<', '+', '@', '\\', '\"', ')', '-', '_', '|'};
+            try {
+                ResourceRecord temp = ResourceRecord.decode(new ByteArrayInputStream(buff));
+                assert(temp != null);
+                assertEquals(CAA.class, temp.getClass());
             } catch (ValidationException | IOException e) {
                 assert(false);
             }

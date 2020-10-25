@@ -19,7 +19,7 @@ import static sdns.serialization.ValidationUtils.validateVisibleAscii;
  */
 public class CAA extends ResourceRecord {
     //Width of the preference field
-    private static final int HEADER_CAA_WIDTH_BYTES = 2;
+    private static final int HEADER_CAA_WIDTH_BYTES = 7;
     //The proper CAA header
     private static final byte[] PROPER_HEADER = {0, 5, 'i', 's', 's', 'u', 'e'};
     //String representation of the domain name of certificate issuer
