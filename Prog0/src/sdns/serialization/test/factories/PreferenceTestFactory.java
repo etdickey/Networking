@@ -29,6 +29,7 @@ public abstract class PreferenceTestFactory {
             fail();
         }
     }
+
     /**
      * Test valid preferences
      * @param pref preference to test
@@ -36,7 +37,8 @@ public abstract class PreferenceTestFactory {
     @ParameterizedTest(name = "Invalid Preference = {0}")
     @ValueSource(ints = {-1, -2147483648, -32768, 65536})
     void testInvalidPreference(int pref){
-        assertThrows(ValidationException.class, () -> setGetPreference(pref));
+        if(getTestInvalid())
+            assertThrows(ValidationException.class, () -> setGetPreference(pref));
     }
 
     /**
@@ -46,4 +48,11 @@ public abstract class PreferenceTestFactory {
      * @throws ValidationException if invalid object
      */
     protected abstract int setGetPreference(int pref) throws ValidationException;
+
+    /**
+     * Gives the subclass the option of whether or not to run invalid tests (if decoding an unsigned int, you can't
+     *   have invalid numbers there because they're unsigned and only fit into 2 bytes so...)
+     * @return whetehr or not to run the invalid tests
+     */
+    protected boolean getTestInvalid() { return true; }
 }

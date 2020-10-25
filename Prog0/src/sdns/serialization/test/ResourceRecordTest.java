@@ -11,6 +11,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import sdns.serialization.*;
 import sdns.serialization.test.factories.DomainNameTestFactory;
+import sdns.serialization.test.factories.PreferenceTestFactory;
 import sdns.serialization.test.factories.TTLTestFactory;
 
 import java.io.ByteArrayInputStream;
@@ -599,6 +600,47 @@ class ResourceRecordTest {
             ByteArrayInputStream b = new ByteArrayInputStream(buff);
             assertThrows(ValidationException.class, () -> ResourceRecord.decode(b));
         }
+
+        /**
+         * Tests preferences in the MX object type
+         */
+        @Nested
+        class DecodeMXInvalidPreference extends PreferenceTestFactory{
+            @Override
+            protected boolean getTestInvalid() {
+                return false;
+            }
+
+            /**
+             * Factory method for calling the appropriate function you want to test for preference validity
+             *
+             * @param pref preference to test
+             * @return the result of a getPreference on the respective object
+             * @throws ValidationException if invalid object
+             */
+            @Override
+            protected int setGetPreference(int pref) throws ValidationException {
+                byte[] buff = { 0,//name
+                        0, 15,//type
+                        0, 1,//0x0001
+                        0, 0, 0, 0,//ttl
+                        0, 3,//RDLen
+                        (byte)(pref >> 8), (byte)pref, //preference
+                        0//exchange
+                };
+                ByteArrayInputStream b = new ByteArrayInputStream(buff);
+                ResourceRecord rr = null;
+                try {
+                    rr = ResourceRecord.decode(b);
+                } catch (IOException e) {
+                    fail();//oops
+                }
+                System.out.println("Pref: " + (byte)(pref >> 8) + " " + (byte)pref);
+                assert(rr instanceof MX);
+                return ((MX)rr).getPreference();
+            }
+        }
+
 
         /**
          * Tests invalid label fields in the name domain name field
