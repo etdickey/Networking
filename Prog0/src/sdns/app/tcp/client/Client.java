@@ -1,27 +1,29 @@
-//Contains the Client class (see comments below)
-//Created: 10/1/20
-package sdns.app.udp.client;
+//Contains the TCP SDNS Client class (see comments below)
+//Created: 10/25/20
+package sdns.app.tcp.client;
 
-import sdns.serialization.*;
+import sdns.serialization.Query;
+import sdns.serialization.Response;
 
-import java.io.EOFException;
 import java.io.IOException;
-import java.net.*;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.lang.System.*;
+import static java.lang.System.err;
+import static java.lang.System.out;
 import static sdns.app.utils.SocketUtils.*;
 import static sdns.app.utils.ValidationUtils.*;
 
 /**
- * SDNS UDP client that first sends all questions, records each ID/Question in ExpectedList (EL), and then
- *   processes responses as described in the Client Protocol in the specifications
- * Reference was drawn from Dr. Donahoo's UDPEchoClientTimeout.java in TCP/IP Sockets in Java version 2
- *
+ * Represents a TCP SDNS Client
  * @author Ethan Dickey
+ *   Credit: Dr. Donahoo of Baylor University for API
  * @version 1.0
  */
 public class Client {
@@ -43,11 +45,26 @@ public class Client {
      * @param responsesContainer the container to stuff the responses into if recordResponses is true
      */
     public static void runClient(String[] args, boolean silent, List<Response> responsesContainer) throws IllegalArgumentException {
+        //Get args/validate
         InetAddress serverAddress = getAddressFromArgs(args);
         int serverPort = getPortFromArgs(args);
 
-        //Construct socket
-        DatagramSocket socket = createUDPSocket(silent);
+        //construct socket and input/output streams
+        Socket socket = createTCPSocket(serverAddress, serverPort, silent);
+        InputStream in = null;
+        OutputStream sout = null;
+        try {
+            in = socket.getInputStream();
+            sout = socket.getOutputStream();
+        } catch (IOException e) {
+            //"if the socket could not be opened, or the socket could not bind to the specified local port"
+            if(!silent){
+                err.println("ERROR: I/O Error while creating the socket or output stream: " + e.getMessage());
+                System.exit(1);
+            } else {
+                throw new RuntimeException("ERROR: I/O Error while creating the socket or output stream: " + e.getMessage(), e);
+            }
+        }
 
         //Record each ID/Question in Expected List (EL)
         //if the number of questions is > MAX_INT, the program won't run in the first place because the
@@ -55,15 +72,21 @@ public class Client {
         List<Query> el = getExpectedListFromArgs(args, silent);
 
         //The client should first send all questions
-        sendQueriesUDP(socket, serverAddress, serverPort, el, silent);
+        sendQueriesTCP(sout, el, silent);
 
         //Then process responses as described in the Client Protocol (in the specification)
         while(0 < el.size()) {
-            //handle a socket timeout
-            try {
-                Response r = receiveResponseUDP(socket, serverAddress, serverPort, el, silent);
+            //Don't need to handle retransmission protocol, according to the specs,
+            // "As TCP is reliable, you do not need to implement an additional retransmission mechanism
+            //  for the TCP SDNS client."
+            //However, if I took out timeouts, then we wouldn't be able to cover the case where the server never
+            //  responds, even if it got the message (which is the only thing that TCP guarantees).
+            //AKA, the timeout covers more than just TCP reliability, it covers the protocol.
 
-                //Check for success
+            //handle a socket timeout (retry requests)
+            try {
+                Response r = receiveResponseTCP(in, el, silent);
+
                 if(r != null){
                     //handle success
                     if(!silent) {
@@ -78,7 +101,7 @@ public class Client {
                     handleSecondTimeout(el, silent);
                 } else {//otherwise retransmit all queries in EL
                     hasTimedOut = true;
-                    sendQueriesUDP(socket, serverAddress, serverPort, el, silent);
+                    sendQueriesTCP(sout, el, silent);
                 }
             }
         }

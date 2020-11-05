@@ -1,6 +1,9 @@
 //Contains the MasterFileFactory class (see comments below)
 //Created: 10/11/20
-package sdns.app.udp.server;
+package sdns.app.masterfile;
+
+import sdns.app.masterfile.MasterFile;
+import sdns.app.masterfile.MasterFileClientToGoogle;
 
 /**
  * Factory for a master file-implementing class

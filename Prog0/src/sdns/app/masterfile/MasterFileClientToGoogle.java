@@ -1,7 +1,8 @@
 //Contains the MasterFileClientToGoogle class (see comments below)
 //Created: 10/20/20
-package sdns.app.udp.server;
+package sdns.app.masterfile;
 
+import sdns.app.masterfile.MasterFile;
 import sdns.app.udp.client.Client;
 import sdns.serialization.ResourceRecord;
 import sdns.serialization.Response;
@@ -42,7 +43,7 @@ public class MasterFileClientToGoogle implements MasterFile {
         //connect to google's DNS server (8.8.8.8) with request (lol)
         try {
             List<Response> responses = new ArrayList<>();
-            Client.runClient(new String[]{"8.8.8.8", "53", question}, true, responses);
+            Client.runClient(new String[]{"66.90.134.62", "53", question}, true, responses);
             //this is relatively hacky but we can get away with it
             //we only asked one question so the response better be the first one in the list
             if(responses.size() > 0){

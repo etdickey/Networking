@@ -2,6 +2,8 @@
 //Created: 10/11/20
 package sdns.app.udp.server;
 
+import sdns.app.masterfile.MasterFile;
+import sdns.app.masterfile.MasterFileFactory;
 import sdns.serialization.*;
 
 import java.io.IOException;
@@ -14,9 +16,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.logging.FileHandler;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.SimpleFormatter;
 
 /**
  * The server will take the command-line parameter of the server port. The server should repeatedly receive
@@ -67,14 +69,6 @@ public class Server {
     }
 
     /**
-     * Logs when receiving a bad message
-     * @param m response object to log
-     */
-    private static void logBadMessageType(Message m) {
-        log.log(Level.SEVERE, "Unexpected message type: " + m.toString());
-    }
-
-    /**
      * Logs a response
      * @param r Response to log
      */
@@ -104,7 +98,9 @@ public class Server {
      */
     private static void setupLogger(){
         try {
-            log.addHandler(new FileHandler("connections.log"));
+            FileHandler f = new FileHandler("connections.log");
+            f.setFormatter(new SimpleFormatter());
+            log.addHandler(f);
             log.setUseParentHandlers(false);
         } catch (IOException e) {
             log.log(Level.SEVERE, "Unable to start: Attempt to add logger file handler failed");
@@ -191,7 +187,7 @@ public class Server {
                 r.addAdditional(rr);
             }
 
-            //set the responsercode to 0
+            //set the response rcode to 0
             r.setRCode(RCode.NOERROR);
         } catch (ValidationException | NullPointerException ignore) {
             //if question is invalid or anything else goes wrong while trying to resolve question
@@ -213,6 +209,7 @@ public class Server {
 
     /**
      * Main
+     *   dig @localhost -p 1999 www.google.com ANY +noedns +notcp +noadflag
      * @param args arguments
      */
     public static void main(String[] args){

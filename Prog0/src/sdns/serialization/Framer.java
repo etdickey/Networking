@@ -7,8 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 
-import static sdns.serialization.IOUtils.readUnsignedShortBigEndian;
-import static sdns.serialization.IOUtils.writeShortBigEndian;
+import static sdns.serialization.IOUtils.*;
 import static sdns.serialization.ValidationUtils.MAX_UNSIGNED_SHORT;
 
 /**
@@ -66,15 +65,6 @@ public class Framer {
         int length = readUnsignedShortBigEndian(in);
 
         //Read length bytes from the input stream
-        byte[] b = new byte[length];
-        int numRead = 0;
-        //This is cool
-        while((numRead += in.read(b, 0, length-numRead)) < length && numRead != -1){ continue; }
-
-        if(numRead == -1 && length != 0){
-            throw new EOFException("Not enough bytes to satisfy length " + length);
-        }
-
-        return b;
+        return readXBytes(in, length);
     }
 }

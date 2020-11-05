@@ -1,4 +1,4 @@
-package sdns.app.udp.server;
+package sdns.app.masterfile;
 
 import java.util.List;
 import java.util.NoSuchElementException;

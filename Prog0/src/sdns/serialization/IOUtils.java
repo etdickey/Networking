@@ -5,6 +5,7 @@ package sdns.serialization;
 import java.io.*;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -280,16 +281,19 @@ public class IOUtils {
      * @param in the input stream to read from
      * @param x the number of bytes to try to read
      * @throws IOException if premature EOF or other IO error
+     * @return byte array with x elements
      */
-    static void readXBytes(InputStream in, int x) throws IOException {
-        int numRead = 0;
-        while(numRead < x && in.read() >= 0){//readByte(in, ", expected: " + x + " got: " + numRead)
-            numRead++;
-        }
+    static byte[] readXBytes(InputStream in, int x) throws IOException {
+        int totalBytesRcvd = 0, bytesRead;
+        byte[] data = new byte[x];
 
-        if(numRead != x){
-            throw new EOFException("ERROR: Premature end of input stream, expected: " + x + " got: " + numRead);
+        //While we haven't gotten all of the bytes, get the rest of the bytes
+        while(totalBytesRcvd < data.length){
+            if ((bytesRead = in.read(data, totalBytesRcvd, data.length - totalBytesRcvd)) == -1)
+                throw new EOFException("ERROR: Premature end of input stream, expected: " + x + " got: " + totalBytesRcvd);
+            totalBytesRcvd += bytesRead;
         }
+        return data;
     }
 
     /**
