@@ -1,0 +1,61 @@
+
+Z:\Compsci\Networking\Programs\Prog0\src\testscripts>cd ../ 
+
+Z:\Compsci\Networking\Programs\Prog0\src>javac -d compiled/ sdns/app/udp/client/test/TestUDPEchoServer.java 
+
+Z:\Compsci\Networking\Programs\Prog0\src>cd compiled/ 
+
+Z:\Compsci\Networking\Programs\Prog0\src\compiled>java sdns/app/udp/client/test/TestUDPEchoServer 5300 
+Handling client at 127.0.0.1 on port 52920
+Handling client at 127.0.0.1 on port 52920
+Handling client at 127.0.0.1 on port 52922
+Handling client at 127.0.0.1 on port 52922
+Handling client at 127.0.0.1 on port 61304
+Handling client at 127.0.0.1 on port 61304
+Handling client at 127.0.0.1 on port 61305
+Handling client at 127.0.0.1 on port 61305
+Handling client at 127.0.0.1 on port 61308
+Handling client at 127.0.0.1 on port 61308
+Handling client at 127.0.0.1 on port 49245
+Handling client at 127.0.0.1 on port 49245
+Handling client at 127.0.0.1 on port 49248
+Handling client at 127.0.0.1 on port 49248
+Handling client at 127.0.0.1 on port 49253
+Handling client at 127.0.0.1 on port 49253
+Handling client at 127.0.0.1 on port 49255
+Handling client at 127.0.0.1 on port 49255
+Handling client at 127.0.0.1 on port 49256
+Handling client at 127.0.0.1 on port 49256
+Handling client at 127.0.0.1 on port 49258
+Handling client at 127.0.0.1 on port 49258
+Handling client at 127.0.0.1 on port 55390
+Handling client at 127.0.0.1 on port 55390
+Handling client at 127.0.0.1 on port 55392
+Handling client at 127.0.0.1 on port 55392
+
+Z:\Compsci\Networking\Programs\Prog0\src\compiled>cd ../testscripts 
+
+Z:\Compsci\Networking\Programs\Prog0\src\testscripts>Z:\Compsci\Networking\Programs\Prog0\src\testscripts>
+Z:\Compsci\Networking\Programs\Prog0\src\testscripts>
+Z:\Compsci\Networking\Programs\Prog0\src\testscripts>
+Z:\Compsci\Networking\Programs\Prog0\src\testscripts>
+Z:\Compsci\Networking\Programs\Prog0\src\testscripts>
+Z:\Compsci\Networking\Programs\Prog0\src\testscripts>
+Z:\Compsci\Networking\Programs\Prog0\src\testscripts>
+Z:\Compsci\Networking\Programs\Prog0\src\testscripts>
+Z:\Compsci\Networking\Programs\Prog0\src\testscripts>
+Z:\Compsci\Networking\Programs\Prog0\src\testscripts>
+Z:\Compsci\Networking\Programs\Prog0\src\testscripts>
+Z:\Compsci\Networking\Programs\Prog0\src\testscripts>
+Z:\Compsci\Networking\Programs\Prog0\src\testscripts>
+Z:\Compsci\Networking\Programs\Prog0\src\testscripts>
+Z:\Compsci\Networking\Programs\Prog0\src\testscripts>
+Z:\Compsci\Networking\Programs\Prog0\src\testscripts>
+Z:\Compsci\Networking\Programs\Prog0\src\testscripts>
+Z:\Compsci\Networking\Programs\Prog0\src\testscripts>
+Z:\Compsci\Networking\Programs\Prog0\src\testscripts>
+Z:\Compsci\Networking\Programs\Prog0\src\testscripts>
+Z:\Compsci\Networking\Programs\Prog0\src\testscripts>
+Z:\Compsci\Networking\Programs\Prog0\src\testscripts>
+Z:\Compsci\Networking\Programs\Prog0\src\testscripts>
+Z:\Compsci\Networking\Programs\Prog0\src\testscripts>
