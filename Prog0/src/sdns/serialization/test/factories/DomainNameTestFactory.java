@@ -20,7 +20,7 @@ public abstract class DomainNameTestFactory {
      * Valid domain name tests
      * Name: -- these tests apply to all domain name field tests
      *   Each label must start with a letter, end with a letter or digit, and have as interior characters only letters
-     *     (A-Z and a-z), digits (0-9), and hypen (-).
+     *     (A-Z and a-z), digits (0-9), and hypen/underscore (-_).
      *   A name with a single, empty label (".") is acceptable
      *
      * @param dm domain name to test
@@ -30,7 +30,8 @@ public abstract class DomainNameTestFactory {
             "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
                     "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
                     "a234567890.",//255
-            "foo.", "foo.com.", "f0-9.c0m.", "google.com.", "www.baylor.edu.", "f0.c-0.", ".", "f-0.", "f-0a."
+            "foo.", "foo.com.", "f0-9.c0m.", "google.com.", "www.baylor.edu.", "f0.c-0.", ".", "f-0.", "f-0a.",
+            "f0_9.c0m.", "f0.c_0.", "f_0.", "f_0a.", "f0_-9.c0m.", "f-_-_-_-_0."
     })
     void testValidDomainNames(String dm){
         try {
@@ -44,7 +45,7 @@ public abstract class DomainNameTestFactory {
      * Invalid domain name tests
      * Name: -- these tests apply to all domain name field tests
      *   Each label must start with a letter, end with a letter or digit, and have as interior characters only letters
-     *     (A-Z and a-z), digits (0-9), and hypen (-).
+     *     (A-Z and a-z), digits (0-9), and hypen/underscore (-_).
      *   A name with a single, empty label (".") is acceptable
      *
      * @param dm domain name to test
@@ -55,7 +56,8 @@ public abstract class DomainNameTestFactory {
             "a234567890123456789012345678901234567890123456789012345678901234.",//64
             "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
                     "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
-                    "a2345678901."//256
+                    "a2345678901.",//256
+            "f0-9.c0m_.", "_a.f", "_.", "_",
     })
     void testInvalidDomainNames(String dm){
         assertThrows(ValidationException.class, () -> this.setGetDomainName(dm));
