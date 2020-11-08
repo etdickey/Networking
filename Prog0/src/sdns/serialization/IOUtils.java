@@ -99,7 +99,7 @@ public class IOUtils {
     public static byte[] writeIntBigEndian(int k) {
         byte[] buff = new byte[4];
         for(int i=0;i<4;i++){
-            buff[i] = (byte)((k >> (1-i)*8) & 0x00FF);
+            buff[i] = (byte)((k >> (3-i)*8) & 0x00FF);
         }
 
         return buff;

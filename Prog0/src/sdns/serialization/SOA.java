@@ -72,13 +72,10 @@ public class SOA extends ResourceRecord {
             throw new ValidationException("RDLen (" + rdlen + ") != rdata length (" + totRDLen + ")", rdlen + "");
         }
 
-        System.out.println("This: " + this.toString());
         this.setSerial(readUnsignedIntBigEndian(in));
         this.setRefresh(readUnsignedIntBigEndian(in));
-        System.out.println("This: " + this.toString());
         this.setRetry(readUnsignedIntBigEndian(in));
         this.setExpire(readUnsignedIntBigEndian(in));
-        System.out.println("This: " + this.toString());
         this.setMinimum(readUnsignedIntBigEndian(in));
     }
 
