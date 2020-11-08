@@ -30,6 +30,7 @@ public abstract class ResourceRecord implements Cloneable {
     protected static final int AAAA_TYPE_VALUE = 28;
     protected static final int MX_TYPE_VALUE = 15;
     protected static final int CAA_TYPE_VALUE = 257;
+    protected static final int SOA_TYPE_VALUE = 6;
 
     //RR name and TimeToLive (TTL)
     private String name = null;
@@ -101,6 +102,7 @@ public abstract class ResourceRecord implements Cloneable {
             case (short) AAAA_TYPE_VALUE: toReturn = new AAAA(name, in); break;
             case (short) MX_TYPE_VALUE: toReturn = new MX(name, in); break;
             case (short) CAA_TYPE_VALUE: toReturn = new CAA(name, in); break;
+            case (short) SOA_TYPE_VALUE: toReturn = new SOA(name, in); break;
             default: toReturn = new Unknown(name, type, in); break;
         }
 
@@ -308,11 +310,6 @@ public abstract class ResourceRecord implements Cloneable {
      * exception at run time.
      *
      * @return a clone of this instance.
-     * @throws CloneNotSupportedException if the object's class does not
-     *                                    support the {@code Cloneable} interface. Subclasses
-     *                                    that override the {@code clone} method can also
-     *                                    throw this exception to indicate that an instance cannot
-     *                                    be cloned.
      * @see Cloneable
      */
     @Override

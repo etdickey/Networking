@@ -6,14 +6,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import sdns.serialization.*;
-import sdns.serialization.test.factories.DomainNameTestFactory;
-import sdns.serialization.test.factories.PreferenceTestFactory;
-import sdns.serialization.test.factories.TTLTestFactory;
-import sdns.serialization.test.factories.VisibleAsciiTestFactory;
+import sdns.serialization.test.factories.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -85,7 +80,6 @@ class ResourceRecordTest {
         //Add the final '0' to signal the end of the array
         b.add((byte)0);
     }
-
     /**
      * Concatenates two byte arrays
      * @param a first arr
@@ -381,6 +375,7 @@ class ResourceRecordTest {
         @ParameterizedTest(name = "Invalid name = {0}")
         @ValueSource(strings = {"", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.⭐.⭕.",
                 "-a.f", "-.", "-",
+                "f0-9.c0m_.", "_a.f", "_.", "_",
                 "a234567890123456789012345678901234567890123456789012345678901234.",//64
                 "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
                         "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
@@ -441,6 +436,7 @@ class ResourceRecordTest {
         @ParameterizedTest(name = "Invalid rdata = {0}")
         @ValueSource(strings = {"", "asdf", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.⭐.⭕.",
                 "-a.f", "-.", "-",
+                "f0-9.c0m_.", "_a.f", "_.", "_",
                 "a234567890123456789012345678901234567890123456789012345678901234.",//64
                 "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
                         "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
@@ -485,6 +481,7 @@ class ResourceRecordTest {
         @ParameterizedTest(name = "Invalid rdata = {0}")
         @ValueSource(strings = {"", "asdf", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.⭐.⭕.",
                 "-a.f", "-.", "-",
+                "f0-9.c0m_.", "_a.f", "_.", "_",
                 "a234567890123456789012345678901234567890123456789012345678901234.",//64
                 "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
                         "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
@@ -612,6 +609,7 @@ class ResourceRecordTest {
         @ParameterizedTest(name = "Invalid rdata = {0}")
         @ValueSource(strings = {"", "asdf", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.⭐.⭕.",
                 "-a.f", "-.", "-",
+                "f0-9.c0m_.", "_a.f", "_.", "_",
                 "a234567890123456789012345678901234567890123456789012345678901234.",//64
                 "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
                         "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
@@ -815,6 +813,30 @@ class ResourceRecordTest {
         }
 
         /**
+         * Tests invalid RDLength (too long -- specifically an SOA test)
+         */
+        @Test @DisplayName("Bad RDLength field (SOA test)")
+        void decodeValidationErrorRDLengthSOA(){
+            //foo. = 3 102, 111, 111, 192, 5 //-64 signed = 192 unsigned
+            byte[] buff = { 4, 'f', 'o', 'o', 'o', -64, 5,//name
+                    0, 6,//type
+                    0, 1,//0x0001
+                    0, 0, 0, 0,//ttl
+                    0, 33,//rdlen (actual value 32)
+                    3, 'f', 'o', 'o', -64, 5,//mname
+                    3, 'f', 'o', 'o', -64, 5,//rname
+                    0, 0, 0, 0,//serial
+                    0, 0, 0, 0,//refresh
+                    0, 0, 0, 0,//retry
+                    0, 0, 0, 0,//expire
+                    0, 0, 0, 0//minimum
+            };
+
+            ByteArrayInputStream b = new ByteArrayInputStream(buff);
+            assertThrows(ValidationException.class, () -> ResourceRecord.decode(b));
+        }
+
+        /**
          * Tests bad RDLength fields
          * @param n bad rdlength
          */
@@ -847,7 +869,9 @@ class ResourceRecordTest {
                 "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
                         "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
                         "a234567890.",//255
-                "foo.", "foo.com.", "f0-9.c0m.", "google.com.", "www.baylor.edu.", "f0.c-0.", ".", "f-0.", "f-0a."})
+                "foo.", "foo.com.", "f0-9.c0m.", "google.com.", "www.baylor.edu.", "f0.c-0.", ".", "f-0.", "f-0a.",
+                "f0_9.c0m.", "f0.c_0.", "f_0.", "f_0a.", "f0_-9.c0m.", "f-_-_-_-_0."
+        })
         void decodeName(String name){
             /*
             "foo." = 3 102, 111, 111, 192, 5 //-64 signed = 192 unsigned
@@ -914,7 +938,9 @@ class ResourceRecordTest {
                 "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
                         "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
                         "a234567890.",//255
-                "foo.", "foo.com.", "f0-9.c0m.", "google.com.", "www.baylor.edu.", "f0.c-0.", ".", "f-0.", "f-0a."})
+                "foo.", "foo.com.", "f0-9.c0m.", "google.com.", "www.baylor.edu.", "f0.c-0.", ".", "f-0.", "f-0a.",
+                "f0_9.c0m.", "f0.c_0.", "f_0.", "f_0a.", "f0_-9.c0m.", "f-_-_-_-_0."
+        })
         void decodeRDataNS(String name){
             /*
             foo. = 3 102, 111, 111, 192, 5 //-64 signed = 192 unsigned
@@ -965,7 +991,9 @@ class ResourceRecordTest {
                 "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
                         "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
                         "a234567890.",//255
-                "foo.", "foo.com.", "f0-9.c0m.", "google.com.", "www.baylor.edu.", "f0.c-0.", ".", "f-0.", "f-0a."})
+                "foo.", "foo.com.", "f0-9.c0m.", "google.com.", "www.baylor.edu.", "f0.c-0.", ".", "f-0.", "f-0a.",
+                "f0_9.c0m.", "f0.c_0.", "f_0.", "f_0a.", "f0_-9.c0m.", "f-_-_-_-_0."
+        })
         void decodeRDataCName(String name){
             /*
             foo. = 3 102, 111, 111, 192, 5 //-64 signed = 192 unsigned
@@ -1118,7 +1146,9 @@ class ResourceRecordTest {
                 "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122
                         "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//244
                         "a234567890.",//255
-                "foo.", "foo.com.", "f0-9.c0m.", "google.com.", "www.baylor.edu.", "f0.c-0.", ".", "f-0.", "f-0a."})
+                "foo.", "foo.com.", "f0-9.c0m.", "google.com.", "www.baylor.edu.", "f0.c-0.", ".", "f-0.", "f-0a.",
+                "f0_9.c0m.", "f0.c_0.", "f_0.", "f_0a.", "f0_-9.c0m.", "f-_-_-_-_0."
+        })
         void decodeRDataMXExchange(String name){
             /*
             //foo. = 3 102, 111, 111, 192, 5 //-64 signed = 192 unsigned
@@ -1166,7 +1196,7 @@ class ResourceRecordTest {
          * Tests preferences in the MX object type
          */
         @Nested
-        class DecodeMXInvalidPreference extends PreferenceTestFactory{
+        class DecodeMXInvalidPreference extends UnsignedShortTestFactory {
             @Override
             protected boolean getTestInvalid() {
                 return false;
@@ -1180,7 +1210,7 @@ class ResourceRecordTest {
              * @throws ValidationException if invalid object
              */
             @Override
-            protected int setGetPreference(int pref) throws ValidationException {
+            protected int setGetUnsignedShort(int pref) throws ValidationException {
                 byte[] buff = { 0,//name
                         0, 15,//type
                         0, 1,//0x0001
@@ -1201,7 +1231,6 @@ class ResourceRecordTest {
                 return ((MX)rr).getPreference();
             }
         }
-
 
         /**
          * Test valid AND invalid CAA issuer
@@ -1273,7 +1302,396 @@ class ResourceRecordTest {
             }
         }
 
-        //The following 4 tests test for the correct type value
+        /**
+         * Test for (in)validity in all SOA fields
+         */
+        @Nested
+        class TestSOAFields {
+            /**
+             * Test decoding SOA MName
+             */
+            @Nested
+            class MNameTests extends DomainNameDecodeTestFactory {
+                /**
+                 * Factory method for calling the appropriate function you want to test for domain name validity
+                 * Extends setGetDomainName to be able to throw IOExceptions (in the case of decoding)
+                 *
+                 * @param dm domain name to test
+                 * @return the result of a getDM on the respective object
+                 * @throws ValidationException if invalid domain name
+                 * @throws IOException         if io error
+                 */
+                @Override
+                protected String setGetDomainNameDecode(byte[] dm) throws ValidationException, IOException {
+                    ByteArrayOutputStream bout = new ByteArrayOutputStream();
+
+                    try {
+                        //calculate length of data field
+                        int rdlen = dm.length + 26;//26 is hardset number of bytes after this DM
+
+                        //write header
+                        bout.write(new byte[]{ 4, 'f', 'o', 'o', 'o', -64, 5,//name
+                                0, 6,//type
+                                0, 1,//0x0001
+                                0, 0, 0, 0,//ttl
+                                (byte)(rdlen >> 8), (byte)rdlen
+                        });
+
+                        //write rdata to stream
+                        bout.write(dm);
+
+                        //write the rest of the data
+                        bout.write(new byte[]{ 3, 'f', 'o', 'o', -64, 5,//rname
+                                0, 0, 0, 0,//serial
+                                0, 0, 0, 0,//refresh
+                                0, 0, 0, 0,//retry
+                                0, 0, 0, 0,//expire
+                                0, 0, 0, 0 //minimum
+                        });
+                    } catch (IOException e) {//oops
+                        fail();
+                    }
+
+                    //decode
+                    ResourceRecord r = ResourceRecord.decode(new ByteArrayInputStream(bout.toByteArray()));
+
+                    assert(r instanceof SOA);
+                    return ((SOA) r).getMName();
+                }
+            }
+
+            /**
+             * Test decoding SOA RName
+             */
+            @Nested
+            class RNameTests extends DomainNameDecodeTestFactory {
+                /**
+                 * Factory method for calling the appropriate function you want to test for domain name validity
+                 * Extends setGetDomainName to be able to throw IOExceptions (in the case of decoding)
+                 *
+                 * @param dm domain name to test
+                 * @return the result of a getDM on the respective object
+                 * @throws ValidationException if invalid domain name
+                 * @throws IOException         if io error
+                 */
+                @Override
+                protected String setGetDomainNameDecode(byte[] dm) throws ValidationException, IOException {
+                    ByteArrayOutputStream bout = new ByteArrayOutputStream();
+
+                    try {
+                        //calculate length of data field
+                        int rdlen = dm.length + 26;//26 is hardset number of bytes after this DM
+
+                        //write header
+                        bout.write(new byte[]{ 4, 'f', 'o', 'o', 'o', -64, 5,//name
+                                0, 6,//type
+                                0, 1,//0x0001
+                                0, 0, 0, 0,//ttl
+                                (byte)(rdlen >> 8), (byte)rdlen,
+                                3, 'f', 'o', 'o', -64, 5,//mname
+                        });
+
+                        //write rdata to stream
+                        bout.write(dm);
+
+                        //write the rest of the data
+                        bout.write(new byte[]{
+                                0, 0, 0, 0,//serial
+                                0, 0, 0, 0,//refresh
+                                0, 0, 0, 0,//retry
+                                0, 0, 0, 0,//expire
+                                0, 0, 0, 0 //minimum
+                        });
+                    } catch (IOException e) {//oops
+                        fail();
+                    }
+
+                    //decode
+                    ResourceRecord r = ResourceRecord.decode(new ByteArrayInputStream(bout.toByteArray()));
+
+                    assert(r instanceof SOA);
+                    return ((SOA) r).getRName();
+                }
+            }
+
+            /**
+             * Test decoding SOA Serial
+             */
+            @Nested
+            class SerialTests extends UnsignedIntTestFactory {
+                /**
+                 * Factory method for calling the appropriate function you want to test for unsigned ints validity
+                 *
+                 * @param x unsigned int to test
+                 * @return the result of a getPreference on the respective object
+                 * @throws ValidationException if invalid object
+                 */
+                @Override
+                protected long setGetUnsignedInt(long x) throws ValidationException {
+                    ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                    ResourceRecord r = null;
+
+                    try {
+                        //write header
+                        bout.write(new byte[]{ 4, 'f', 'o', 'o', 'o', -64, 5,//name
+                                0, 6,//type
+                                0, 1,//0x0001
+                                0, 0, 0, 0,//ttl
+                                0, 32,
+                                3, 'f', 'o', 'o', -64, 5,//mname
+                                3, 'f', 'o', 'o', -64, 5,//rname
+                                (byte)(x >> 24), (byte)(x >> 16), (byte)(x >> 8), (byte)x,//serial
+                                0, 0, 0, 0,//refresh
+                                0, 0, 0, 0,//retry
+                                0, 0, 0, 0,//expire
+                                0, 0, 0, 0 //minimum
+                        });
+
+                        //decode
+                        r = ResourceRecord.decode(new ByteArrayInputStream(bout.toByteArray()));
+                    } catch (IOException e) {//oops
+                        fail();
+                    }
+
+                    assert(r instanceof SOA);
+                    return ((SOA) r).getSerial();
+                }
+
+                /**
+                 * Gives the subclass the option of whether or not to run invalid tests (if decoding an unsigned int, you can't
+                 * have invalid numbers there because they're unsigned and only fit into 4 bytes so...)
+                 *
+                 * @return whether or not to run the invalid tests
+                 */
+                @Override
+                protected boolean getTestInvalid() {
+                    return false;
+                }
+            }
+
+            /**
+             * Test decoding SOA refresh
+             */
+            @Nested
+            class RefreshTests extends UnsignedIntTestFactory {
+                /**
+                 * Factory method for calling the appropriate function you want to test for unsigned ints validity
+                 *
+                 * @param x unsigned int to test
+                 * @return the result of a getPreference on the respective object
+                 * @throws ValidationException if invalid object
+                 */
+                @Override
+                protected long setGetUnsignedInt(long x) throws ValidationException {
+                    ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                    ResourceRecord r = null;
+
+                    try {
+                        //write header
+                        bout.write(new byte[]{ 4, 'f', 'o', 'o', 'o', -64, 5,//name
+                                0, 6,//type
+                                0, 1,//0x0001
+                                0, 0, 0, 0,//ttl
+                                0, 32,
+                                3, 'f', 'o', 'o', -64, 5,//mname
+                                3, 'f', 'o', 'o', -64, 5,//rname
+                                0, 0, 0, 0,//serial
+                                (byte)(x >> 24), (byte)(x >> 16), (byte)(x >> 8), (byte)x,//refresh
+                                0, 0, 0, 0,//retry
+                                0, 0, 0, 0,//expire
+                                0, 0, 0, 0 //minimum
+                        });
+
+                        //decode
+                        r = ResourceRecord.decode(new ByteArrayInputStream(bout.toByteArray()));
+                    } catch (IOException e) {//oops
+                        fail();
+                    }
+
+                    assert(r instanceof SOA);
+                    return ((SOA) r).getRefresh();
+                }
+
+                /**
+                 * Gives the subclass the option of whether or not to run invalid tests (if decoding an unsigned int, you can't
+                 * have invalid numbers there because they're unsigned and only fit into 4 bytes so...)
+                 *
+                 * @return whether or not to run the invalid tests
+                 */
+                @Override
+                protected boolean getTestInvalid() {
+                    return false;
+                }
+            }
+
+            /**
+             * Test decoding SOA retry
+             */
+            @Nested
+            class RetryTests extends UnsignedIntTestFactory {
+                /**
+                 * Factory method for calling the appropriate function you want to test for unsigned ints validity
+                 *
+                 * @param x unsigned int to test
+                 * @return the result of a getPreference on the respective object
+                 * @throws ValidationException if invalid object
+                 */
+                @Override
+                protected long setGetUnsignedInt(long x) throws ValidationException {
+                    ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                    ResourceRecord r = null;
+
+                    try {
+                        //write header
+                        bout.write(new byte[]{ 4, 'f', 'o', 'o', 'o', -64, 5,//name
+                                0, 6,//type
+                                0, 1,//0x0001
+                                0, 0, 0, 0,//ttl
+                                0, 32,
+                                3, 'f', 'o', 'o', -64, 5,//mname
+                                3, 'f', 'o', 'o', -64, 5,//rname
+                                0, 0, 0, 0,//serial
+                                0, 0, 0, 0,//refresh
+                                (byte)(x >> 24), (byte)(x >> 16), (byte)(x >> 8), (byte)x,//retry
+                                0, 0, 0, 0,//expire
+                                0, 0, 0, 0 //minimum
+                        });
+
+                        //decode
+                        r = ResourceRecord.decode(new ByteArrayInputStream(bout.toByteArray()));
+                    } catch (IOException e) {//oops
+                        fail();
+                    }
+
+                    assert(r instanceof SOA);
+                    return ((SOA) r).getRetry();
+                }
+
+                /**
+                 * Gives the subclass the option of whether or not to run invalid tests (if decoding an unsigned int, you can't
+                 * have invalid numbers there because they're unsigned and only fit into 4 bytes so...)
+                 *
+                 * @return whether or not to run the invalid tests
+                 */
+                @Override
+                protected boolean getTestInvalid() {
+                    return false;
+                }
+            }
+
+            /**
+             * Test decoding SOA expire
+             */
+            @Nested
+            class ExpireTests extends UnsignedIntTestFactory {
+                /**
+                 * Factory method for calling the appropriate function you want to test for unsigned ints validity
+                 *
+                 * @param x unsigned int to test
+                 * @return the result of a getPreference on the respective object
+                 * @throws ValidationException if invalid object
+                 */
+                @Override
+                protected long setGetUnsignedInt(long x) throws ValidationException {
+                    ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                    ResourceRecord r = null;
+
+                    try {
+                        //write header
+                        bout.write(new byte[]{ 4, 'f', 'o', 'o', 'o', -64, 5,//name
+                                0, 6,//type
+                                0, 1,//0x0001
+                                0, 0, 0, 0,//ttl
+                                0, 32,
+                                3, 'f', 'o', 'o', -64, 5,//mname
+                                3, 'f', 'o', 'o', -64, 5,//rname
+                                0, 0, 0, 0,//serial
+                                0, 0, 0, 0,//refresh
+                                0, 0, 0, 0,//retry
+                                (byte)(x >> 24), (byte)(x >> 16), (byte)(x >> 8), (byte)x,//expire
+                                0, 0, 0, 0 //minimum
+                        });
+
+                        //decode
+                        r = ResourceRecord.decode(new ByteArrayInputStream(bout.toByteArray()));
+                    } catch (IOException e) {//oops
+                        fail();
+                    }
+
+                    assert(r instanceof SOA);
+                    return ((SOA) r).getExpire();
+                }
+
+                /**
+                 * Gives the subclass the option of whether or not to run invalid tests (if decoding an unsigned int, you can't
+                 * have invalid numbers there because they're unsigned and only fit into 4 bytes so...)
+                 *
+                 * @return whether or not to run the invalid tests
+                 */
+                @Override
+                protected boolean getTestInvalid() {
+                    return false;
+                }
+            }
+
+            /**
+             * Test decoding SOA minimum
+             */
+            @Nested
+            class MinimumTests extends UnsignedIntTestFactory {
+                /**
+                 * Factory method for calling the appropriate function you want to test for unsigned ints validity
+                 *
+                 * @param x unsigned int to test
+                 * @return the result of a getPreference on the respective object
+                 * @throws ValidationException if invalid object
+                 */
+                @Override
+                protected long setGetUnsignedInt(long x) throws ValidationException {
+                    ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                    ResourceRecord r = null;
+
+                    try {
+                        //write header
+                        bout.write(new byte[]{ 4, 'f', 'o', 'o', 'o', -64, 5,//name
+                                0, 6,//type
+                                0, 1,//0x0001
+                                0, 0, 0, 0,//ttl
+                                0, 32,
+                                3, 'f', 'o', 'o', -64, 5,//mname
+                                3, 'f', 'o', 'o', -64, 5,//rname
+                                0, 0, 0, 0,//serial
+                                0, 0, 0, 0,//refresh
+                                0, 0, 0, 0,//retry
+                                0, 0, 0, 0, //expire
+                                (byte)(x >> 24), (byte)(x >> 16), (byte)(x >> 8), (byte)x//minimum
+                        });
+
+                        //decode
+                        r = ResourceRecord.decode(new ByteArrayInputStream(bout.toByteArray()));
+                    } catch (IOException e) {//oops
+                        fail();
+                    }
+
+                    assert(r instanceof SOA);
+                    return ((SOA) r).getMinimum();
+                }
+
+                /**
+                 * Gives the subclass the option of whether or not to run invalid tests (if decoding an unsigned int, you can't
+                 * have invalid numbers there because they're unsigned and only fit into 4 bytes so...)
+                 *
+                 * @return whether or not to run the invalid tests
+                 */
+                @Override
+                protected boolean getTestInvalid() {
+                    return false;
+                }
+            }
+        }
+
+
+        //The following tests test for the correct type value
         @Test @DisplayName("Test type 1")
         void decodeA(){
             byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
@@ -1368,6 +1786,29 @@ class ResourceRecordTest {
                 ResourceRecord temp = ResourceRecord.decode(new ByteArrayInputStream(buff));
                 assert(temp != null);
                 assertEquals(CAA.class, temp.getClass());
+            } catch (ValidationException | IOException e) {
+                fail();
+            }
+        }
+        @Test @DisplayName("Test type 6")
+        void decodeSOA(){
+            byte[] buff = { 3, 'f', 'o', 'o', -64, 5,
+                    0, 6, //type
+                    0, 1, //0x0001
+                    0, 0, 0, 0, //ttl
+                    0, 32,//rdlen
+                    3, 'f', 'o', 'o', -64, 5,//mname
+                    3, 'f', 'o', 'o', -64, 5,//rname
+                    0, 0, 0, 0,//serial
+                    0, 0, 0, 0,//refresh
+                    0, 0, 0, 0,//retry
+                    0, 0, 0, 0,//expire
+                    0, 0, 0, 0//minimum
+            };
+            try {
+                ResourceRecord temp = ResourceRecord.decode(new ByteArrayInputStream(buff));
+                assert(temp != null);
+                assertEquals(SOA.class, temp.getClass());
             } catch (ValidationException | IOException e) {
                 fail();
             }

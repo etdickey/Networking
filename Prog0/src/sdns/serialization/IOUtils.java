@@ -80,12 +80,26 @@ public class IOUtils {
 
     /**
      * Writes a short (2 bytes) in a byte array
-     * @param k the int to write
+     * @param k the short to write
      * @return the short in Big Endian in a Byte array
      */
     public static byte[] writeShortBigEndian(short k) {
         byte[] buff = new byte[2];
         for(int i=0;i<2;i++){
+            buff[i] = (byte)((k >> (1-i)*8) & 0x00FF);
+        }
+
+        return buff;
+    }
+
+    /**
+     * Writes an int (4 bytes) in a byte array
+     * @param k the int to write
+     * @return the int in Big Endian in a Byte array
+     */
+    public static byte[] writeIntBigEndian(int k) {
+        byte[] buff = new byte[4];
+        for(int i=0;i<4;i++){
             buff[i] = (byte)((k >> (1-i)*8) & 0x00FF);
         }
 
@@ -142,6 +156,15 @@ public class IOUtils {
     static String readDomainName(InputStream in) throws ValidationException, IOException { return readDomainName(in, -1); }
 
     /**
+     * Alias for readDomainNameWithLength(in, -1) <-sentinel value
+     * @param in the InputStream to read from
+     * @return a string list representing the deserialized domain name read and total number of bytes read
+     * @throws ValidationException if parse or validation problem
+     * @throws IOException if I/O problem
+     */
+    static List<String> readDomainNameWithLength(InputStream in) throws ValidationException, IOException { return readDomainNameWithLength(in, -1); }
+
+    /**
      * Reads a domain name in from the given input stream
      * @param in the InputStream to read from
      * @param maxSize if the number of bytes read doesn't match the maxSize, a ValidationException is thrown
@@ -150,6 +173,18 @@ public class IOUtils {
      * @throws IOException if I/O problem
      */
     static String readDomainName(InputStream in, int maxSize) throws ValidationException, IOException {
+        return readDomainNameWithLength(in, maxSize).get(0);
+    }
+
+    /**
+     * Reads a domain name in from the given input stream
+     * @param in the InputStream to read from
+     * @param maxSize if the number of bytes read doesn't match the maxSize, a ValidationException is thrown
+     * @return a string list representing the deserialized domain name read and total number of bytes read
+     * @throws ValidationException if parse or validation problem
+     * @throws IOException if I/O problem
+     */
+    static List<String> readDomainNameWithLength(InputStream in, int maxSize) throws ValidationException, IOException {
         Objects.requireNonNull(in, "Input stream cannot be null");
 
         int numBytes = 0;
@@ -216,7 +251,7 @@ public class IOUtils {
             finalString.append('.');
         }
 
-        return finalString.toString();
+        return new ArrayList<>(Arrays.asList(finalString.toString(), numBytes + ""));
     }
 
     /**
@@ -271,6 +306,24 @@ public class IOUtils {
         for(int i=0;i<2;i++){
             toReturn = toReturn << 8;
             toReturn |= (readByte(in, "when reading unsigned short in big endian") & 0x00FF);
+        }
+
+        return toReturn;
+    }
+
+    /**
+     * Reads an unsigned int (4 bytes) from an input stream and returns it as a long (because java doesn't
+     *  really do unsigned)
+     * @param in the input stream to read from
+     * @return the unsigned ing as a long
+     * @throws IOException if premature EOF or other IO error
+     */
+    static long readUnsignedIntBigEndian(InputStream in) throws IOException {
+        long toReturn = 0;
+
+        for(int i=0;i<4;i++){
+            toReturn = toReturn << 8;
+            toReturn |= (readByte(in, "when reading unsigned int in big endian") & 0x00FF);
         }
 
         return toReturn;

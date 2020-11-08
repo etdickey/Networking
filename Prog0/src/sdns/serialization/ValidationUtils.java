@@ -17,6 +17,8 @@ public class ValidationUtils {
     public static final int DOMAIN_NAME_LABEL_MAX_LEN = 63;
     //Max unsigned short
     public static final int MAX_UNSIGNED_SHORT = 65535;
+    //Max unsigned short
+    public static final long MAX_UNSIGNED_INT = 4294967295L;
     //Top bit is set for QR
     public static final byte QR_BIT_SET = (byte) 0x80;
     //Min and max ascii text encodings
@@ -50,10 +52,10 @@ public class ValidationUtils {
      * @param c char to check
      * @return if character is in [a-zA-Z0-9-]
      */
-    static boolean isAZaz09Dash(char c){
+    static boolean isAZaz09DashUnderscore(char c){
         //I use the -1/+1 syntax because <= makes the assembly check 2 conditions whereas incrementing/decrementing allows
         //  for a faster check (because the +-1 is calculated at compile time)
-        return ('0'-1 < c && c < '9'+1) || ('A'-1 < c && c < 'Z'+1) || ('a'-1 < c && c < 'z'+1) || (c == '-');
+        return ('0'-1 < c && c < '9'+1) || ('A'-1 < c && c < 'Z'+1) || ('a'-1 < c && c < 'z'+1) || (c == '-') || (c == '_');
     }
 
     /**
@@ -113,7 +115,7 @@ public class ValidationUtils {
 
             //  Each label must have as interior characters only letters (A-Z and a-z), digits (0-9), and hypen (-)
             for(char c : l.toCharArray()){
-                if(!isAZaz09Dash(c)){
+                if(!isAZaz09DashUnderscore(c)){
                     return false;
                 }
             }
@@ -146,6 +148,7 @@ public class ValidationUtils {
        CName        : 31
        MX           : 1039
        NS           : 1019
+       SOA          : 1229
        Unknown      : 1087
      Message        : 7499
        Query        : 5749
