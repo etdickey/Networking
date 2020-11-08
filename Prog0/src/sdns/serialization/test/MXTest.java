@@ -10,7 +10,7 @@ import sdns.serialization.NS;
 import sdns.serialization.ValidationException;
 import sdns.serialization.test.factories.DomainNameTestFactory;
 import sdns.serialization.test.factories.EqualsAndHashCodeCaseInsensitiveTestFactory;
-import sdns.serialization.test.factories.PreferenceTestFactory;
+import sdns.serialization.test.factories.UnsignedShortTestFactory;
 import sdns.serialization.test.factories.TTLTestFactory;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -93,7 +93,7 @@ public class MXTest {
      * Preference setter/getter tests (DONE)
      */
     @Nested
-    class PreferenceSetterGetter extends PreferenceTestFactory {
+    class PreferenceSetterGetter extends UnsignedShortTestFactory {
         /**
          * Factory method for calling the appropriate function you want to test for preference validity
          *
@@ -102,7 +102,7 @@ public class MXTest {
          * @throws ValidationException if invalid object
          */
         @Override
-        protected int setGetPreference(int pref) throws ValidationException {
+        protected int setGetUnsignedShort(int pref) throws ValidationException {
             MX mx = null;
             try {
                 mx = new MX(".", 0, ".", 0);
@@ -202,7 +202,7 @@ public class MXTest {
          * Preference tests
          */
         @Nested
-        class MXConstructorPreferenceTests extends PreferenceTestFactory {
+        class MXConstructorPreferenceTests extends UnsignedShortTestFactory {
             /**
              * Factory method for calling the appropriate function you want to test for Preference validity
              *
@@ -211,7 +211,7 @@ public class MXTest {
              * @throws ValidationException if invalid object
              */
             @Override
-            protected int setGetPreference(int pref) throws ValidationException {
+            protected int setGetUnsignedShort(int pref) throws ValidationException {
                 MX mx = new MX("good.com.", 123, "foo.", pref);
                 return mx.getPreference();
             }
