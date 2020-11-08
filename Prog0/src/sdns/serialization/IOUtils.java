@@ -111,7 +111,7 @@ public class IOUtils {
      * @return Byte[]
      */
     static Byte[] toObject(byte[] bytesPrim){
-        Byte[] bytes = new Byte[2];
+        Byte[] bytes = new Byte[bytesPrim.length];
         Arrays.setAll(bytes, n -> bytesPrim[n]);
         return bytes;
     }

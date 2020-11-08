@@ -13,6 +13,9 @@ import sdns.serialization.test.factories.EqualsAndHashCodeCaseInsensitiveTestFac
 import sdns.serialization.test.factories.UnsignedShortTestFactory;
 import sdns.serialization.test.factories.TTLTestFactory;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -328,6 +331,72 @@ public class MXTest {
         @Override
         protected NS getDifferentTypeObject() throws ValidationException {
             return new NS("good.com.", 123, "foo.a1.");
+        }
+    }
+
+
+    /**
+     * Valid encode tests
+     */
+    @Nested
+    class ValidEncodeTests {
+        ByteArrayOutputStream encodedStream = new ByteArrayOutputStream();
+
+        /**
+         * MX RR basic valid encode
+         */
+        @Test @DisplayName("MX RR basic valid encode")
+        void basicEncodeTest() {
+            byte[] expectedArr = {3, 102, 111, 111, 3, 99, 111, 109, 0,
+                    0, 15,
+                    0, 1,
+                    0, 0, 0, 42,
+                    0, 7,
+                    0, 5,
+                    3, 102, 111, 111, 0};
+            try {
+                MX mx = new MX("foo.com.", 42, "foo.", 5);
+                mx.encode(encodedStream);
+                assertArrayEquals(expectedArr, encodedStream.toByteArray());
+                encodedStream.reset();
+            } catch (ValidationException | IOException e) {
+                fail();
+            }
+        }
+
+        /**
+         * MX encode null
+         */
+        @Test @DisplayName("MX Encode Null")
+        void encodeNullStreamTest() {
+            try {
+                MX mx = new MX("foo.com.", 42, "foo.", 5);
+                assertThrows(NullPointerException.class, () -> mx.encode(null));
+            } catch (ValidationException e) {
+                fail();
+            }
+        }
+
+        /**
+         * MX encode empty name
+         */
+        @Test @DisplayName("MX encode empty name")
+        void encodeEmptyName() {
+            byte[] expectedArr = {0,
+                    0, 15,
+                    0, 1,
+                    0, 0, 0, 42,
+                    0, 7,
+                    0, 5,
+                    3, 102, 111, 111, 0};
+            try {
+                MX mx = new MX(".", 42, "foo.", 5);
+                mx.encode(encodedStream);
+                assertArrayEquals(expectedArr, encodedStream.toByteArray());
+                encodedStream.reset();
+            } catch (ValidationException | IOException e) {
+                fail();
+            }
         }
     }
 }

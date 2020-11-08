@@ -10,8 +10,10 @@ import sdns.serialization.NS;
 import sdns.serialization.ValidationException;
 import sdns.serialization.test.factories.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Ethan Dickey
@@ -285,6 +287,38 @@ public class CAATest {
         @Override
         protected NS getDifferentTypeObject() throws ValidationException {
             return new NS("good.com.", 123, "foo.a1.");
+        }
+    }
+
+    /**
+     * Valid encode tests
+     */
+    @Nested
+    class ValidEncodeTests {
+        ByteArrayOutputStream encodedStream = new ByteArrayOutputStream();
+
+        /**
+         * Basic encode tests
+         */
+        @Test @DisplayName("CAA RR Basic Valid Encode")
+        void basicEncodeTest() {
+            byte[] expectedArr = {3, 102, 111, 111, 3, 99, 111, 109, 0,
+                    1, 1,
+                    0, 1,
+                    0, 0, 0, 42,
+                    0, 14,
+                    0, 5,
+                    'i', 's', 's', 'u', 'e',
+                    'f', 'o', 'o', '.', 'a', '1', '.'
+            };
+            try {
+                CAA caa = new CAA("foo.com.", 42, "foo.a1.");
+                caa.encode(encodedStream);
+                assertArrayEquals(expectedArr, encodedStream.toByteArray());
+                encodedStream.reset();
+            } catch(ValidationException | IOException e) {
+                fail();
+            }
         }
     }
 }

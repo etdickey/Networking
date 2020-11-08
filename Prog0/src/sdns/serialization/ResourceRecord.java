@@ -139,7 +139,7 @@ public abstract class ResourceRecord implements Cloneable {
         }
 
         //Type -- this is not expandable, and is written acknowledging the "quick and dirty" way was used.
-        Collections.addAll(a, (byte)0, (byte)this.getTypeValue());
+        Collections.addAll(a, (byte)(this.getTypeValue() >> 8), (byte)this.getTypeValue());
 
         //0x0001
         Collections.addAll(a, (byte)0, (byte)1);
