@@ -1,4 +1,4 @@
-//Contains the PreferenceTestFactory class (see comments below)
+//Contains the UnsignedShortTestFactory class (see comments below)
 //Created: 10/18/20
 package sdns.serialization.test.factories;
 
@@ -15,30 +15,30 @@ import static org.junit.jupiter.api.Assertions.*;
  *      16-bit, unsigned integer which specifies the preference given to this RR
  *        among others at the same owner.  Lower values are preferred.
  */
-public abstract class PreferenceTestFactory {
+public abstract class UnsignedShortTestFactory {
     /**
-     * Test valid preferences
-     * @param pref preference to test
+     * Test valid unsigned shorts
+     * @param pref unsigned short to test
      */
-    @ParameterizedTest(name = "Valid Preference = {0}")
+    @ParameterizedTest(name = "Valid Unsigned Shorts = {0}")
     @ValueSource(ints = {0, 1, 65535})
-    void testValidPreference(int pref){
+    void testValidUnsignedShort(int pref){
         try {
-            assertEquals(pref, setGetPreference(pref));
+            assertEquals(pref, setGetUnsignedShort(pref));
         } catch (ValidationException e) {
             fail();
         }
     }
 
     /**
-     * Test valid preferences
-     * @param pref preference to test
+     * Test valid unsigned shorts
+     * @param pref unsigned short to test
      */
-    @ParameterizedTest(name = "Invalid Preference = {0}")
+    @ParameterizedTest(name = "Invalid Unsigned Shorts = {0}")
     @ValueSource(ints = {-1, -2147483648, -32768, 65536})
-    void testInvalidPreference(int pref){
+    void testInvalidUnsignedShort(int pref){
         if(getTestInvalid())
-            assertThrows(ValidationException.class, () -> setGetPreference(pref));
+            assertThrows(ValidationException.class, () -> setGetUnsignedShort(pref));
     }
 
     /**
@@ -47,7 +47,7 @@ public abstract class PreferenceTestFactory {
      * @return the result of a getPreference on the respective object
      * @throws ValidationException if invalid object
      */
-    protected abstract int setGetPreference(int pref) throws ValidationException;
+    protected abstract int setGetUnsignedShort(int pref) throws ValidationException;
 
     /**
      * Gives the subclass the option of whether or not to run invalid tests (if decoding an unsigned int, you can't
