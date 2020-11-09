@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 import static java.lang.System.err;
 import static java.lang.System.out;
 import static sdns.app.utils.SocketUtils.*;
-import static sdns.app.utils.ValidationUtils.*;
+import static sdns.app.utils.ClientValidationUtils.*;
 
 /**
  * Represents a TCP SDNS Client

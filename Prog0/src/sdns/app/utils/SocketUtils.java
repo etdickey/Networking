@@ -3,6 +3,7 @@
 package sdns.app.utils;
 
 
+import sdns.app.masterfile.MasterFile;
 import sdns.serialization.*;
 
 import java.io.EOFException;
@@ -10,11 +11,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import static java.lang.System.err;
-import static sdns.app.utils.ValidationUtils.validateResponse;
+import static sdns.app.utils.ClientValidationUtils.validateResponse;
 
 /**
  * SDNS client socket tools (UDP or TCP)

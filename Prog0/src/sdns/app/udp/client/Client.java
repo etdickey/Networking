@@ -4,17 +4,14 @@ package sdns.app.udp.client;
 
 import sdns.serialization.*;
 
-import java.io.EOFException;
-import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.lang.System.*;
 import static sdns.app.utils.SocketUtils.*;
-import static sdns.app.utils.ValidationUtils.*;
+import static sdns.app.utils.ClientValidationUtils.*;
 
 /**
  * SDNS UDP client that first sends all questions, records each ID/Question in ExpectedList (EL), and then
