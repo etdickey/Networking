@@ -1,6 +1,5 @@
 package sdns.app.tcp.server;
 
-import sdns.app.masterfile.MasterFile;
 import sdns.app.utils.ServerProtocol;
 import sdns.serialization.*;
 

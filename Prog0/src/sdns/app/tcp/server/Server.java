@@ -2,9 +2,6 @@
 //Created: 11/7/20
 package sdns.app.tcp.server;
 
-
-import sdns.app.masterfile.MasterFile;
-
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -62,7 +59,7 @@ public class Server {
         //Start up server!/////////////////////
         ServerSocket serverSocket = null;
         try {
-            serverSocket = new ServerSocket(serverPort);
+            serverSocket = new ServerSocket(serverPort, 50000);
             logTCPServerStart(serverSocket);
         } catch (IOException e) {
             logErrorAndExit("Unable to start: bad port (or socket error): " + e.getMessage());
