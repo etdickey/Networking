@@ -4,6 +4,7 @@ package sdns.app.utils;
 
 import sdns.app.masterfile.MasterFile;
 import sdns.app.masterfile.MasterFileFactory;
+//import sdns.app.masterfile.MasterFileFactoryMock;
 
 import static sdns.app.utils.LoggingUtils.logErrorAndExit;
 import static sdns.app.utils.ValidationUtils.getPort;
@@ -39,6 +40,7 @@ public class ServerValidationUtils {
     public static MasterFile getAndCheckMasterFile(){
         MasterFile mf = null;
         try {
+//            mf = MasterFileFactoryMock.makeMasterFile();
             mf = MasterFileFactory.makeMasterFile();
         } catch (Exception e) {
             logErrorAndExit("Unable to start: Error in creating the master file: " + e.getMessage());

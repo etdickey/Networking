@@ -2,7 +2,6 @@
 //Created: 10/25/20
 package sdns.serialization;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
