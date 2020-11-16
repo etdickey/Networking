@@ -1,3 +1,5 @@
+//Contains the DomainNameDecodeTestFactory class (see comments below)
+//Created: 11/6/20
 package sdns.serialization.test.factories;
 
 import sdns.serialization.ValidationException;
@@ -6,6 +8,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
+/**
+ * @author Ethan Dickey
+ * @author Harrison Rogers
+ * Makes an abstract class for testing anything decoding with a domain name
+ */
 public abstract class DomainNameDecodeTestFactory extends DomainNameTestFactory {
     /**
      * Serializes the given domain name.  Does not check that name is a valid domain name.
