@@ -13,27 +13,43 @@ public enum RCode {
     /**
      * Indicates no error
      */
-    NOERROR,
+    NOERROR(0, "No error condition"),
     /**
      * Indicates that the name server was unable to interpret the query
      */
-    FORMATERROR,
+    FORMATERROR(1, "The name server was unable to interpret the query"),
     /**
      * Indicates that the name server was unable to process this query due to a problem with the name server
      */
-    SERVERFAILURE,
+    SERVERFAILURE(2, "The name server was unable to process this query " +
+            "due to a problem with the name server"),
     /**
      * Indicates that the domain name referenced in the query does not exist
      */
-    NAMEERROR,
+    NAMEERROR(3, "The domain name referenced in the query does not exist"),
     /**
      * Indicates that the name server does not support the requested kind of query
      */
-    NOTIMPLEMENTED,
+    NOTIMPLEMENTED(4, "The name server does not support the requested kind of query"),
     /**
      * Indicates that the name server refuses to perform the specified operation
      */
-    REFUSED;
+    REFUSED(5, "The name server refuses to perform the specified operation");
+
+    /** Value for rcode */
+    private int val;
+    /** Error message associated with the rcode */
+    private String errMessage;
+
+    /**
+     * Constructs and rcode with a value and error message
+     * @param val value for the enum
+     * @param errMessage associated error message
+     */
+    RCode(int val, String errMessage){
+        this.val = val;
+        this.errMessage = errMessage;
+    }
 
     /**
      * Get the rcode associated with the given rcode value
@@ -42,15 +58,12 @@ public enum RCode {
      * @throws ValidationException if rcode value is out of range
      */
     public static RCode getRCode(int rcodeValue) throws ValidationException {
-        switch(rcodeValue){
-            case 0: return NOERROR;
-            case 1: return FORMATERROR;
-            case 2: return SERVERFAILURE;
-            case 3: return NAMEERROR;
-            case 4: return NOTIMPLEMENTED;
-            case 5: return REFUSED;
-            default: throw new ValidationException("Invalid RCode: " + rcodeValue, rcodeValue + "");
+        for(RCode r : RCode.values()){
+            if(r.val == rcodeValue){
+                return r;//compiler will optimize appropriately
+            }
         }
+        throw new ValidationException("Invalid RCode: " + rcodeValue, rcodeValue + "");
     }
 
     /**
@@ -58,17 +71,7 @@ public enum RCode {
      * @return the value associated with the rcode
      */
     public int getRCodeValue() {
-        int toRet;
-        switch(this){
-            case NOERROR: toRet = 0; break;
-            case FORMATERROR: toRet = 1; break;
-            case SERVERFAILURE: toRet = 2; break;
-            case NAMEERROR: toRet = 3; break;
-            case NOTIMPLEMENTED: toRet = 4; break;
-            case REFUSED: toRet = 5; break;
-            default: throw new IllegalStateException("Unexpected value: " + this);
-        }
-        return toRet;
+        return this.val;
     }
 
     /**
@@ -76,17 +79,6 @@ public enum RCode {
      * @return the message associated with the rcode
      */
     public String getRCodeMessage(){
-        String toRet;
-        switch(this){
-            case NOERROR: toRet = "No error condition"; break;
-            case FORMATERROR: toRet = "The name server was unable to interpret the query"; break;
-            case SERVERFAILURE: toRet = "The name server was unable to process this query " +
-                    "due to a problem with the name server"; break;
-            case NAMEERROR: toRet = "The domain name referenced in the query does not exist"; break;
-            case NOTIMPLEMENTED: toRet = "The name server does not support the requested kind of query"; break;
-            case REFUSED: toRet = "The name server refuses to perform the specified operation"; break;
-            default: throw new IllegalStateException("Unexpected value: " + this);
-        }
-        return toRet;
+        return this.errMessage;
     }
 }
