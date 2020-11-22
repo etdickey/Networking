@@ -21,6 +21,7 @@ import java.util.Objects;
  * @version 1.0
  */
 public class MasterFileClientToGoogle implements MasterFile {
+    private static final String DNS_IP_ADDR = "ns3.baylor.edu";
     /**
      * Populate answer, name server, and additional list RRs.
      *
@@ -44,7 +45,7 @@ public class MasterFileClientToGoogle implements MasterFile {
         try {
             List<Response> responses = new ArrayList<>();
             //Client.runClient(new String[]{"66.90.134.62", "53", question}, true, responses);
-            Client.runClient(new String[]{"129.62.148.40", "53", question}, true, responses);
+            Client.runClient(new String[]{DNS_IP_ADDR, "53", question}, true, responses);
             //this is relatively hacky but we can get away with it
             //we only asked one question so the response better be the first one in the list
             if(responses.size() > 0){
