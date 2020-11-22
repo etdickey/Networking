@@ -237,8 +237,8 @@ public class SOA extends ResourceRecord {
     /**
      * Returns a String representation
      *  Ex:
-     * SOA: name=<name> ttl=<ttl> mname=<mname> rname=<rname> serial=<serial> refresh=<refresh>
-     *     retry=<retry> expire=<expire> minimum=<minimum>
+     * SOA: name=[name] ttl=[ttl] mname=[mname] rname=[rname] serial=[serial] refresh=[refresh]
+     *     retry=[retry] expire=[expire] minimum=[minimum]
      *
      * SOA: name=foo.com. ttl=500 mname=ns1.com rname=dns.com serial=543 refresh=900 retry=900 expire=1800 minimum=60
      *

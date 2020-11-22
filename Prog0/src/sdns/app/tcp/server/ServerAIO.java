@@ -170,6 +170,7 @@ public class ServerAIO {
      * @param deframer deframer to use as the buffer
      * @param sp ServerProtocol object to handle responses
      * @param readBuff byte buffer used in read
+     * @param bytesRead number of bytes read
      * @throws IOException if I/O problem
      */
     public static void handleRead(final AsynchronousSocketChannel clntChan, NIODeframer deframer,
@@ -206,6 +207,7 @@ public class ServerAIO {
      * @param sp ServerProtocol object to handle responses
      * @param writeBuff byte buffer used in write
      * @param readBuff reading buffer to reuse
+     * @throws IOException if IO error while communicating with client
      */
     public static void handleWrite(final AsynchronousSocketChannel clntChan, NIODeframer deframer,
                                    ServerProtocol sp, ByteBuffer writeBuff, ByteBuffer readBuff) throws IOException {

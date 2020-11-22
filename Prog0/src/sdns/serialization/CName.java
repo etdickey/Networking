@@ -77,7 +77,7 @@ public class CName extends ResourceRecord {
 
     /**
      * Returns a String representation
-     * CName: name=<name> ttl=<ttl> canonicalname=<canonicalname>
+     * CName: name=[name] ttl=[ttl] canonicalname=[canonicalname]
      *   For example
      *     CName: name=foo.com. ttl=500 canonicalname=ns.com
      *

@@ -169,6 +169,7 @@ public abstract class Message implements Cloneable {
     /**
      * Finishes writing the encoded header based on which subtype it is
      * @param out the output array to write to
+     * @throws IOException if error writing to the buffer
      */
     protected abstract void writeHeader(ByteArrayOutputStream out) throws IOException;
 
@@ -297,11 +298,6 @@ public abstract class Message implements Cloneable {
      * exception at run time.
      *
      * @return a clone of this instance.
-     * @throws CloneNotSupportedException if the object's class does not
-     *                                    support the {@code Cloneable} interface. Subclasses
-     *                                    that override the {@code clone} method can also
-     *                                    throw this exception to indicate that an instance cannot
-     *                                    be cloned.
      * @see Cloneable
      */
     @Override

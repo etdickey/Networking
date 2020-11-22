@@ -142,7 +142,7 @@ public class MX extends ResourceRecord {
 
     /**
      * Returns a String representation
-     * MX: name=<name> ttl=<ttl> exchange=<exchange> preference=<preference>
+     * MX: name=[name] ttl=[ttl] exchange=[exchange] preference=[preference]
      *
      * For example
      * MX: name=foo.com. ttl=500 exchange=ex.com. preference=4

@@ -72,7 +72,7 @@ public class AAAA extends ResourceRecord {
 
     /**
      * Returns a String representation
-     * A: name=<name> ttl=<ttl> address=<address>
+     * A: name=[name] ttl=[ttl] address=[address]
      *
      * For example
      * A: name=foo.com. ttl=500 address=1.2.3.4

@@ -109,6 +109,7 @@ public class Response extends Message {
      *       16     NSCOUNT (unsigned) query(0, 0), response(*, *)
      *       16     ARCOUNT (unsigned) query(0, 0), response(*, *)
      * @param out the output stream to write to
+     * @throws IOException if error writing to the buffer
      */
     @Override
     protected void writeHeader(ByteArrayOutputStream out) throws IOException {
@@ -230,7 +231,7 @@ public class Response extends Message {
 
     /**
      * Returns a String representation
-     * Response: id=<id> query=<query> answers=[<answer>,...,<answer>] nameservers=[<nameserver>,...,<nameserver>] additionals=[<additional>,...,<additional>]
+     * Response: id=[id] query=[query] answers=[[answer],...,[answer]] nameservers=[[nameserver],...,[nameserver]] additionals=[[additional],...,[additional]]
      *
      * For example
      * Response: id=500 query=ns.com. answer=[a.com.,b.com.] nameservers=[ns1.com.] additionals=[]

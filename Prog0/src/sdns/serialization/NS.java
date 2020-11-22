@@ -101,7 +101,7 @@ public class NS extends ResourceRecord {
 
     /**
      * Returns a String representation
-     * NS: name=<name> ttl=<ttl> nameserver=<nameserver>
+     * NS: name=[name] ttl=[ttl] nameserver=[nameserver]
      *   For example
      *     NS: name=foo.com. ttl=500 nameserver=ns.com
      * @return a String representation

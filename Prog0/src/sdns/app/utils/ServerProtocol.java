@@ -167,6 +167,7 @@ public abstract class ServerProtocol {
     /**
      * Sends a Response
      * @param r Response to send
+     * @return success or failure
      * @throws IOException if sending error
      */
     protected abstract boolean sendResponse(Response r) throws IOException;

@@ -26,7 +26,7 @@ public class Framer {
      * Frame given message
      * @param message bytes to frame
      * @return framed byte[]
-     * @throws ValidationException  if message too long (> 65535)
+     * @throws ValidationException  if message too long (greater than 65535)
      * @throws NullPointerException if message is null
      */
     public static byte[] frameMsg(byte[] message) throws ValidationException, NullPointerException {

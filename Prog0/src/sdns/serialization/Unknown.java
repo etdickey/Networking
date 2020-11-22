@@ -66,7 +66,7 @@ public class Unknown extends ResourceRecord {
 
     /**
      * Returns a String representation
-     * Unknown: name=<name> ttl=<ttl>
+     * Unknown: name=[name] ttl=[ttl]
      *   For example
      *     Unknown: name=foo.com. ttl=500
      * @return a String representation

@@ -130,7 +130,7 @@ public class CAA extends ResourceRecord {
 
     /**
      * Returns a String representation
-     *   CAA: name=<name> ttl=<ttl> issuer=<issuer>
+     *   CAA: name=[name] ttl=[ttl] issuer=[issuer]
      *
      * For example
      *   CAA: name=foo.com. ttl=500 issuer=pki.goog.

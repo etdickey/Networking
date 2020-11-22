@@ -29,6 +29,7 @@ public class ClientValidationUtils {
      * Validate a Response based on specifications.  Removes from EL if it matches with bad response code.
      * @param expectedList expected list to handle accordingly
      * @param r Response to validate
+     * @param silent option to print error message to console and exit vs throwing error
      * @return if it matches specifications
      */
     public static boolean validateResponse(List<Query> expectedList, Response r, boolean silent){

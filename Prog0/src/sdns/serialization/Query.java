@@ -79,6 +79,7 @@ public class Query extends Message {
      * Finishes writing the encoded header based on which subtype it is
      *
      * @param out the output stream to write to
+     * @throws IOException if error writing to the buffer
      */
     @Override
     protected void writeHeader(ByteArrayOutputStream out) throws IOException {
@@ -104,7 +105,7 @@ public class Query extends Message {
 
     /**
      * Returns a String representation
-     * Query: id=<id> query=<query>
+     * Query: id=[id] query=[query]
      *
      * For example
      * Query: id=500 query=ns.com.
