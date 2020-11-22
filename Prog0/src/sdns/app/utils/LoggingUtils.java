@@ -8,6 +8,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.channels.AsynchronousSocketChannel;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -97,6 +98,7 @@ public class LoggingUtils {
     /**
      * Logs a new client's source IP address/port and request
      * @param packet client
+     * @param payload request to print
      */
     public static void logNewUDPClient(DatagramPacket packet, String payload) {
         log.log(Level.INFO, "Handling client at " + packet.getAddress().getHostAddress() +
@@ -106,14 +108,37 @@ public class LoggingUtils {
     /**
      * Logs a new client's source IP address/port and request
      * @param packet client
+     * @param payload request to print
      */
     public static void logNewTCPClient(Socket packet, String payload) {
         log.log(Level.INFO, "Handling client at " + packet.getInetAddress().getHostAddress() +
                 " on port " + packet.getPort() + "\nRequest:: " + payload);
     }
 
-    public static void logSevereError(String s){
-        log.severe(s);
+    /**
+     * Logs a new client's source IP address/port and request
+     * @param client client
+     * @param payload request to print
+     */
+    public static void logNewASyncClient(AsynchronousSocketChannel client, String payload) {
+        try {
+            log.log(Level.INFO, "Handling client at " + client.getRemoteAddress().toString()
+                    + "\nRequest:: " + payload);
+        } catch (IOException e) {
+            log.log(Level.INFO, "Handling client.\nRequest:: " + payload);
+        }
     }
+
+    /**
+     * Logs a severe error
+     * @param s severe error message
+     */
+    public static void logSevereError(String s){ log.severe(s); }
+
+    /**
+     * Logs a warning
+     * @param s warning message
+     */
+    public static void logWarning(String s){ log.warning(s); }
 
 }
