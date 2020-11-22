@@ -51,7 +51,7 @@ public abstract class DomainNameTestFactory {
      * @param dm domain name to test
      */
     @ParameterizedTest(name = "Invalid DM = {0}")
-    @ValueSource(strings = {"", "asdf", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.⭐.⭕.",
+    @ValueSource(strings = {"", "asdf", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.\u2B50.⭕.",
             "-a.f", "-.", "-",
             "a234567890123456789012345678901234567890123456789012345678901234.",//64
             "a23456789012345678901234567890123456789012345678901234567890.a23456789012345678901234567890123456789012345678901234567890." +//122

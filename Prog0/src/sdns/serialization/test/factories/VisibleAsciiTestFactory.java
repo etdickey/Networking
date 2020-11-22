@@ -70,7 +70,7 @@ public abstract class VisibleAsciiTestFactory {
      */
     @ParameterizedTest(name = "Invisible name = {0}")
     @ValueSource(strings = {"aasdf" + '\n' + "asdf", " ", "              ", "asdfqwer ", "#$%^Dasdf\n",
-            "aasdf" + '\r', "aasdf" + '\t', "aasdf" + '\b',  "aasdf" + '\f', "Ẵ.Ẓ.㛃.⭐.⭕.", "asdf.Ƞ."
+            "aasdf" + '\r', "aasdf" + '\t', "aasdf" + '\b',  "aasdf" + '\f', "Ẵ.Ẓ.㛃.\u2B50.⭕.", "asdf.Ƞ."
     })
     void testInvisibleName(String name){
         assertThrows(ValidationException.class, () -> this.setGetVisibleName(name));

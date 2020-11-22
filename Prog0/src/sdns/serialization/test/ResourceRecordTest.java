@@ -373,7 +373,7 @@ class ResourceRecordTest {
          * @param name invalid name
          */
         @ParameterizedTest(name = "Invalid name = {0}")
-        @ValueSource(strings = {"", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.⭐.⭕.",
+        @ValueSource(strings = {"", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.\u2B50.⭕.",
                 "-a.f", "-.", "-",
                 "f0-9.c0m_.", "_a.f", "_.", "_",
                 "a234567890123456789012345678901234567890123456789012345678901234.",//64
@@ -434,7 +434,7 @@ class ResourceRecordTest {
          * @param name invalid name to try
          */
         @ParameterizedTest(name = "Invalid rdata = {0}")
-        @ValueSource(strings = {"", "asdf", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.⭐.⭕.",
+        @ValueSource(strings = {"", "asdf", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.\u2B50.⭕.",
                 "-a.f", "-.", "-",
                 "f0-9.c0m_.", "_a.f", "_.", "_",
                 "a234567890123456789012345678901234567890123456789012345678901234.",//64
@@ -479,7 +479,7 @@ class ResourceRecordTest {
          * @param name invalid name to try
          */
         @ParameterizedTest(name = "Invalid rdata = {0}")
-        @ValueSource(strings = {"", "asdf", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.⭐.⭕.",
+        @ValueSource(strings = {"", "asdf", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.\u2B50.⭕.",
                 "-a.f", "-.", "-",
                 "f0-9.c0m_.", "_a.f", "_.", "_",
                 "a234567890123456789012345678901234567890123456789012345678901234.",//64
@@ -607,7 +607,7 @@ class ResourceRecordTest {
          * @param name invalid name to try
          */
         @ParameterizedTest(name = "Invalid rdata = {0}")
-        @ValueSource(strings = {"", "asdf", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.⭐.⭕.",
+        @ValueSource(strings = {"", "asdf", "asdf.].", "asdf.Ƞ.", "asdf..", "www.baylor.edu/", "..", "asdf.asdf", "f0-9.c0m-.", "Ẵ.Ẓ.㛃.\u2B50.⭕.",
                 "-a.f", "-.", "-",
                 "f0-9.c0m_.", "_a.f", "_.", "_",
                 "a234567890123456789012345678901234567890123456789012345678901234.",//64
