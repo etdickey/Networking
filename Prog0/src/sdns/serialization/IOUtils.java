@@ -224,9 +224,6 @@ public class IOUtils {
             numBytes++;
         }
 
-//        if(llen == -1){
-//            throw new EOFException("ERROR: Premature end of input stream");
-//        } else
         if(checkEndOfLabelsBitsSet(llen)){//clear the next byte too, according to the specifications
             readByte(in, "reading trash byte after top two bits set");
             numBytes++;

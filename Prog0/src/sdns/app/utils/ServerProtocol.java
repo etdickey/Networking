@@ -148,7 +148,7 @@ public abstract class ServerProtocol {
             r = null;
         } catch (NoSuchElementException e){
             //send + log
-            handleBadMessage(q, RCode.NAMEERROR, "Domain name does not exist: ");
+            handleBadMessage(q, RCode.NAMEERROR, "Domain name does not exist (" + e.getMessage() + "): ");
 
             r = null;
         }
