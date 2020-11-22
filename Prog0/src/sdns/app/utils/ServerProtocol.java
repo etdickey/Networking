@@ -37,8 +37,10 @@ public abstract class ServerProtocol {
      * Implemnets server protocol for handling message from a client (SDNS specifications)
      * @param message message to process
      * @throws IOException if IO error communicating with client
+     * @throws NullPointerException if message null
      */
-    protected void processResponse(byte[] message) throws IOException {
+    public void processResponse(byte[] message) throws IOException, NullPointerException {
+        boolean sentResponse = false;
         //Parse the message
         try {
             Message m = Message.decode(message);
@@ -57,7 +59,7 @@ public abstract class ServerProtocol {
                 if(r != null){
                     //Send + log response with same ID and question, RCode = 0, and masterfile's ans/ns/adtl RRs
                     logResponseSend(r);
-                    sendResponse(r);
+                    sentResponse = sendResponse(r);
                 }
             } else {//bad message type
                 handleBadMessage(m, RCode.REFUSED);
@@ -65,6 +67,10 @@ public abstract class ServerProtocol {
         } catch (ValidationException e) {
             logParsingError(e.getMessage());
             logNewClient("Number of bytes received from invalid packet of size " + message.length);
+        }
+
+        if(!sentResponse){
+            handleFailedSend();
         }
     }
 
@@ -150,11 +156,20 @@ public abstract class ServerProtocol {
     }
 
     /**
+     * Runs upon failure to respond to the client during processResponse
+     *   (primarily for possible use in derived classes)
+     */
+    protected void handleFailedSend(){
+        //print nothing, according to the protocol
+//        logWarning("Warning: server failed to send a response to the decoded message");
+    }
+
+    /**
      * Sends a Response
      * @param r Response to send
      * @throws IOException if sending error
      */
-    protected abstract void sendResponse(Response r) throws IOException;
+    protected abstract boolean sendResponse(Response r) throws IOException;
 
     /**
      * Logs the current client with the given message

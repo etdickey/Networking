@@ -66,10 +66,11 @@ public class Server extends ServerProtocol {
      * @throws IOException if sending error
      */
     @Override
-    protected void sendResponse(Response r) throws IOException {
+    protected boolean sendResponse(Response r) throws IOException {
         byte[] encoded = r.encode();
         DatagramPacket toSend = new DatagramPacket(encoded, encoded.length, source.getAddress(), source.getPort());
         sout.send(toSend);
+        return true;
     }
 
     /**

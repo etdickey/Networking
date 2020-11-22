@@ -27,11 +27,13 @@ public class ClientHandler extends ServerProtocol implements Runnable {
      * @throws IOException if sending error
      */
     @Override
-    protected void sendResponse(Response r) throws IOException {
+    protected boolean sendResponse(Response r) throws IOException {
         try {
             sout.write(Framer.frameMsg(r.encode()));
+            return true;
         } catch (ValidationException e) {
             //ack
+            return false;
         }
     }
 
