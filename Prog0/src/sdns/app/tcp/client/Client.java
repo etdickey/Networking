@@ -73,6 +73,12 @@ public class Client {
 
         //The client should first send all questions
         sendQueriesTCP(sout, el, silent);
+        //done with output, so shut it down (TCP guarantees delivery)
+        try {
+            socket.shutdownOutput();
+        } catch (IOException e) {
+            //ack
+        }
 
         //Then process responses as described in the Client Protocol (in the specification)
         while(0 < el.size()) {

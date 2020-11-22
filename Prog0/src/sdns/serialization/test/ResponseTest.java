@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 /**
  * @author Ethan Dickey
  * @author Harrison Rogers
@@ -577,7 +578,17 @@ class ResponseTest {
      */
     @Nested
     class EqualsAndHashCode extends EqualsAndHashCodeCaseInsensitiveTestFactory<Response> {
-        //helper setter for complex objects
+        /**
+         * helper setter for complex objects
+         * @param u1 response to add to
+         * @param cn cname1
+         * @param cn2 cname2
+         * @param ns nameserver1
+         * @param a answer1
+         * @param ns1 nameserver2
+         * @param ns2 nameserver3
+         * @throws ValidationException if null parameter
+         */
         void complexEqualsHelper(Response u1, CName cn, CName cn2, NS ns, A a, NS ns1, NS ns2) throws ValidationException {
             u1.addNameServer(ns1);
             u1.addNameServer(ns2);
@@ -702,6 +713,8 @@ class ResponseTest {
         }
     }
 
+
+
     /**
      * Encode tests
      */
@@ -773,6 +786,173 @@ class ResponseTest {
             } catch(Exception e) {
                 fail("Exception Thrown", e);
             }
+        }
+    }
+
+    /**
+     * Encode and decode test
+     */
+    @Test @DisplayName("Testing unknown decoding and encoding")
+    void unknownEncodeTest() {
+        byte[] buff = {0, 0,//id
+                -128, 0, //1 0000 [ignored bit]x7 0000
+                0, 1, //0x0001
+                0, 4, //ANCount
+                0, 2, //NSCount
+                0, 3, //ARCount
+                //query
+                3, 'f', 'o', 'o', -64, 5,
+                0, -1,//0x00FF
+                0, 1,  //0x0001
+                //answer
+                3, 'f', 'o', 'o', -64, 5,//CName
+                0, 5,
+                0, 1, //0x0001
+                0, 0, 0, 0,
+                0, 6,
+                3, 'f', 'o', 'o', -64, 5,
+
+                0,//A
+                0, 1,
+                0, 1,
+                0, 0, 0, 0,
+                0, 4,
+                -1, 0, -1, -119,
+
+                3, 'f', 'o', 'o', -64, 5,//Unknown
+                1, 5,
+                0, 1, //0x0001
+                0, 0, 0, 0,
+                0, 6,
+                3, 'f', 'o', 'o', -64, 5,
+
+                -64, 5,//NS
+                0, 2,
+                0, 1, //0x0001
+                0, 0, 0, 0,
+                0, 6,
+                3, 'f', 'o', 'o', -64, 5,
+
+
+                //authority
+                -64, 5,//NS
+                0, 2,
+                0, 1, //0x0001
+                0, 0, 0, 0,
+                0, 6,
+                3, 'f', 'o', 'o', -64, 5,
+
+                3, 'f', 'o', 'o', -64, 5,//NS
+                0, 2,
+                0, 1, //0x0001
+                0, 0, 0, 0,
+                0, 1,
+                0,
+
+                //additional
+                0,//A
+                0, 1,
+                0, 1,
+                0, 0, 0, 0,
+                0, 4,
+                0, 0, 0, 0,
+
+                3, 'f', 'o', 'o', -64, 5,//CName
+                0, 5,
+                0, 1, //0x0001
+                0, 0, 0, 0,
+                0, 6,
+                3, 'f', 'o', 'o', -64, 5,
+
+                -64, 5,//NS
+                0, 2,
+                0, 1, //0x0001
+                0, 0, 0, 0,
+                0, 6,
+                3, 'f', 'o', 'o', -64, 5
+        };
+        byte[] expected = {0, 0,//id
+                -127, 0, //1 0000 0010 000 0000
+                0, 1, //0x0001
+                0, 3, //ANCount
+                0, 2, //NSCount
+                0, 3, //ARCount
+                //query
+                3, 'f', 'o', 'o', 0,
+                0, -1,//0x00FF
+                0, 1,  //0x0001
+                //answer
+                3, 'f', 'o', 'o', 0,//CName
+                0, 5,
+                0, 1, //0x0001
+                0, 0, 0, 0,
+                0, 5,
+                3, 'f', 'o', 'o', 0,
+
+                0,//A
+                0, 1,
+                0, 1,
+                0, 0, 0, 0,
+                0, 4,
+                -1, 0, -1, -119,
+
+                0,//NS
+                0, 2,
+                0, 1, //0x0001
+                0, 0, 0, 0,
+                0, 5,
+                3, 'f', 'o', 'o', 0,
+
+
+                //authority
+                0,//NS
+                0, 2,
+                0, 1, //0x0001
+                0, 0, 0, 0,
+                0, 5,
+                3, 'f', 'o', 'o', 0,
+
+                3, 'f', 'o', 'o', 0,//NS
+                0, 2,
+                0, 1, //0x0001
+                0, 0, 0, 0,
+                0, 1,
+                0,
+
+                //additional
+                0,//A
+                0, 1,
+                0, 1,
+                0, 0, 0, 0,
+                0, 4,
+                0, 0, 0, 0,
+
+                3, 'f', 'o', 'o', 0,//CName
+                0, 5,
+                0, 1, //0x0001
+                0, 0, 0, 0,
+                0, 5,
+                3, 'f', 'o', 'o', 0,
+
+                0,//NS
+                0, 2,
+                0, 1, //0x0001
+                0, 0, 0, 0,
+                0, 5,
+                3, 'f', 'o', 'o', 0
+        };
+
+        try {
+            Message temp = Message.decode(buff);
+            byte[] arr = temp.encode();
+            for(int i=0; i<Math.min(arr.length, expected.length); i++){
+                if(arr[i] != expected[i]){
+                    System.out.println("Arrays differ at " + i + ": arr[i] = " + arr[i] + " != expected[i] = " + expected[i]);
+                }
+            }
+            assertArrayEquals(expected, temp.encode());
+        } catch (ValidationException e) {
+            fail();
         }
     }
 }

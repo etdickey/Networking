@@ -12,6 +12,8 @@ import sdns.serialization.*;
 import sdns.serialization.test.factories.DomainNameTestFactory;
 import sdns.serialization.test.factories.SdnsIDTestFactory;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 
@@ -26,8 +28,10 @@ class MessageTest {
      */
     @Nested
     class DecodeHeaderMalformed {
-        @Test
-        @DisplayName("Basic header test error short id")
+        /**
+         * Basic header test error short id
+         */
+        @Test @DisplayName("Basic header test error short id")
         void headerDecodeMal1(){
             byte[] buff = { 0, //id
                     0, 0, //0 0000 [ignored bit]x4 000 0000
@@ -41,8 +45,11 @@ class MessageTest {
             };
             assertThrows(ValidationException.class, () -> Message.decode(buff));
         }
-        @Test
-        @DisplayName("Basic header test error short flags")
+
+        /**
+         * Basic header test error short flags
+         */
+        @Test @DisplayName("Basic header test error short flags")
         void headerDecodeMal2(){
             byte[] buff = { 0, 0,//id
                     0,  //0 0000 [ignored bit]x4 000 0000
@@ -56,8 +63,11 @@ class MessageTest {
             };
             assertThrows(ValidationException.class, () -> Message.decode(buff));
         }
-        @Test
-        @DisplayName("Basic header test error bad 0x0001")
+
+        /**
+         * Basic header test error bad 0x0001
+         */
+        @Test @DisplayName("Basic header test error bad 0x0001")
         void headerDecodeMal3(){
             byte[] buff = { 0, 0,//id
                     0, 0, //0 0000 [ignored bit]x4 000 0000
@@ -71,8 +81,11 @@ class MessageTest {
             };
             assertThrows(ValidationException.class, () -> Message.decode(buff));
         }
-        @Test
-        @DisplayName("Basic header test error bad 0x0001")
+
+        /**
+         * Basic header test error bad 0x0001
+         */
+        @Test @DisplayName("Basic header test error bad 0x0001")
         void headerDecodeMal4(){
             byte[] buff = { 0, 0,//id
                     0, 0, //0 0000 [ignored bit]x4 000 0000
@@ -86,8 +99,11 @@ class MessageTest {
             };
             assertThrows(ValidationException.class, () -> Message.decode(buff));
         }
-        @Test
-        @DisplayName("Basic header test error short ancount")
+
+        /**
+         * Basic header test error short ancount
+         */
+        @Test @DisplayName("Basic header test error short ancount")
         void headerDecodeMal5(){
             byte[] buff = { 0, 0,//id
                     0, 0, //0 0000 [ignored bit]x4 000 0000
@@ -101,8 +117,11 @@ class MessageTest {
             };
             assertThrows(ValidationException.class, () -> Message.decode(buff));
         }
-        @Test
-        @DisplayName("Basic header test error short nscount")
+
+        /**
+         * Basic header test error short nscount
+         */
+        @Test @DisplayName("Basic header test error short nscount")
         void headerDecodeMal6(){
             byte[] buff = { 0, 0,//id
                     0, 0, //0 0000 [ignored bit]x4 000 0000
@@ -116,8 +135,11 @@ class MessageTest {
             };
             assertThrows(ValidationException.class, () -> Message.decode(buff));
         }
-        @Test
-        @DisplayName("Basic header test error short arcount")
+
+        /**
+         * Basic header test error short arcount
+         */
+        @Test @DisplayName("Basic header test error short arcount")
         void headerDecodeMal7(){
             byte[] buff = { 0, 0,//id
                     0, 0, //0 0000 [ignored bit]x4 000 0000
@@ -132,8 +154,10 @@ class MessageTest {
             assertThrows(ValidationException.class, () -> Message.decode(buff));
         }
 
-        @Test
-        @DisplayName("Null test")
+        /**
+         * Null test
+         */
+        @Test @DisplayName("Null test")
         void inputStreamNull(){
             assertThrows(NullPointerException.class, () -> Message.decode(null));
         }
@@ -144,6 +168,9 @@ class MessageTest {
      */
     @Nested
     class DecodeQueryMalformed {
+        /**
+         * Basic header test error short query name
+         */
         @Test @DisplayName("Basic header test error short query name")
         void queryDecodeMal1(){
             byte[] buff = { 0, 0,//id
@@ -158,6 +185,10 @@ class MessageTest {
             };
             assertThrows(ValidationException.class, () -> Message.decode(buff));
         }
+
+        /**
+         * Basic header test error short query name ending
+         */
         @Test @DisplayName("Basic header test error short query name ending")
         void queryDecodeMal2(){
             byte[] buff = { 0, 0,//id
@@ -172,6 +203,10 @@ class MessageTest {
             };
             assertThrows(ValidationException.class, () -> Message.decode(buff));
         }
+
+        /**
+         * Basic header test error short query name beginning
+         */
         @Test @DisplayName("Basic header test error short query name beginning")
         void queryDecodeMal3(){
             byte[] buff = { 0, 0,//id
@@ -186,6 +221,10 @@ class MessageTest {
             };
             assertThrows(ValidationException.class, () -> Message.decode(buff));
         }
+
+        /**
+         * Basic header test error short query 0x00FF
+         */
         @Test @DisplayName("Basic header test error short query 0x00FF")
         void queryDecodeMal4(){
             byte[] buff = { 0, 0,//id
@@ -200,6 +239,10 @@ class MessageTest {
             };
             assertThrows(ValidationException.class, () -> Message.decode(buff));
         }
+
+        /**
+         * Basic header test error short query 0x00FF
+         */
         @Test @DisplayName("Basic header test error short query 0x00FF")
         void queryDecodeMal5(){
             byte[] buff = { 0, 0,//id
@@ -214,6 +257,10 @@ class MessageTest {
             };
             assertThrows(ValidationException.class, () -> Message.decode(buff));
         }
+
+        /**
+         * Basic header test error short query 0x0001
+         */
         @Test @DisplayName("Basic header test error short query 0x0001")
         void queryDecodeMal6(){
             byte[] buff = { 0, 0,//id
@@ -228,6 +275,10 @@ class MessageTest {
             };
             assertThrows(ValidationException.class, () -> Message.decode(buff));
         }
+
+        /**
+         * Basic header test error short query 0x0001
+         */
         @Test @DisplayName("Basic header test error short query 0x0001")
         void queryDecodeMal7(){
             byte[] buff = { 0, 0,//id
@@ -242,6 +293,10 @@ class MessageTest {
             };
             assertThrows(ValidationException.class, () -> Message.decode(buff));
         }
+
+        /**
+         * Basic header test error short id
+         */
         @Test @DisplayName("Basic header test error short id")
         void queryDecodeMal8(){
             byte[] buff = { 0 };
@@ -425,7 +480,9 @@ class MessageTest {
      */
     @Nested
     class DecodeValid {
-        //Basic test
+        /**
+         * Basic test
+         */
         @Test @DisplayName("Basic query test")
         void basicQueryDecode(){
             byte[] buff = { 0, 0,//id
@@ -449,7 +506,9 @@ class MessageTest {
             }
         }
 
-        //Testing ignoring certain header fields
+        /**
+         * Testing ignoring certain header fields
+         */
         @Test @DisplayName("Basic query test (ignore header fields)")
         void basicQueryDecode2(){
             byte[] buff = { 0, 0,//id
@@ -473,7 +532,9 @@ class MessageTest {
             }
         }
 
-        //Comprehensive response test
+        /**
+         * Comprehensive response test
+         */
         @Test @DisplayName("Basic response test")
         void basicResponseDecode(){
             byte[] buff = { 0, 0,//id
@@ -574,7 +635,130 @@ class MessageTest {
             }
         }
 
-        //Basic response test ignoring certain header fields
+        /**
+         * Comprehensive response test with unknown decode
+         */
+        @Test @DisplayName("Basic response test with unknown")
+        void unknownResponseDecode(){
+            byte[] buff = { 0, 0,//id
+                    -128, 0, //1 0000 [ignored bit]x7 0000
+                    0, 1, //0x0001
+                    0, 4, //ANCount
+                    0, 2, //NSCount
+                    0, 3, //ARCount
+                    //query
+                    3, 'f', 'o', 'o', -64, 5,
+                    0, -1,//0x00FF
+                    0, 1,  //0x0001
+                    //answer
+                    3, 'f', 'o', 'o', -64, 5,//CName
+                    0, 5,
+                    0, 1, //0x0001
+                    0, 0, 0, 0,
+                    0, 6,
+                    3, 'f', 'o', 'o', -64, 5,
+
+                    0,//A
+                    0, 1,
+                    0, 1,
+                    0, 0, 0, 0,
+                    0, 4,
+                    -1, 0, -1, -119,
+
+                    3, 'f', 'o', 'o', -64, 5,//Unknown
+                    1, 5,
+                    0, 1, //0x0001
+                    0, 0, 0, 0,
+                    0, 6,
+                    3, 'f', 'o', 'o', -64, 5,
+
+                    -64, 5,//NS
+                    0, 2,
+                    0, 1, //0x0001
+                    0, 0, 0, 0,
+                    0, 6,
+                    3, 'f', 'o', 'o', -64, 5,
+
+
+                    //authority
+                    -64, 5,//NS
+                    0, 2,
+                    0, 1, //0x0001
+                    0, 0, 0, 0,
+                    0, 6,
+                    3, 'f', 'o', 'o', -64, 5,
+
+                    3, 'f', 'o', 'o', -64, 5,//NS
+                    0, 2,
+                    0, 1, //0x0001
+                    0, 0, 0, 0,
+                    0, 1,
+                    0,
+
+                    //additional
+                    0,//A
+                    0, 1,
+                    0, 1,
+                    0, 0, 0, 0,
+                    0, 4,
+                    0, 0, 0, 0,
+
+                    3, 'f', 'o', 'o', -64, 5,//CName
+                    0, 5,
+                    0, 1, //0x0001
+                    0, 0, 0, 0,
+                    0, 6,
+                    3, 'f', 'o', 'o', -64, 5,
+
+                    -64, 5,//NS
+                    0, 2,
+                    0, 1, //0x0001
+                    0, 0, 0, 0,
+                    0, 6,
+                    3, 'f', 'o', 'o', -64, 5
+            };
+            try {
+                Message temp = Message.decode(buff);
+                assert temp != null;
+
+                //Make the unknown RR
+                ResourceRecord u = ResourceRecord.decode(new ByteArrayInputStream(new byte[]{3, 'f', 'o', 'o', -64, 5,//Unknown
+                            1, 5,
+                            0, 1, //0x0001
+                            0, 0, 0, 0,
+                            0, 6,
+                            3, 'f', 'o', 'o', -64, 5}));
+
+                NS ns1 = new NS(".", 0, "foo.");
+                NS ns2 = new NS("foo.", 0, ".");
+                CName cn1 = new CName("foo.", 0, "foo.");
+                A a1 = new A(".", 0, (Inet4Address)Inet4Address.getByName("255.0.255.137"));
+                A a2 = new A(".", 0, (Inet4Address)Inet4Address.getByName("0.0.0.0"));
+
+                assertAll(() -> assertEquals(Response.class, temp.getClass()),
+                        () -> assertEquals("foo.", temp.getQuery()),
+                        () -> assertEquals(0, temp.getID()),
+                        () -> assertEquals(ns1, ((Response)temp).getNameServerList().get(0)),
+                        () -> assertEquals(ns2, ((Response)temp).getNameServerList().get(1)),
+                        () -> assertEquals(ns1, ((Response)temp).getAnswerList().get(3)),
+                        () -> assertEquals(ns1, ((Response)temp).getAdditionalList().get(2)),
+
+                        () -> assertEquals(u, ((Response)temp).getAnswerList().get(2)),
+
+                        () -> assertEquals(cn1, ((Response)temp).getAnswerList().get(0)),
+                        () -> assertEquals(cn1, ((Response)temp).getAdditionalList().get(1)),
+
+                        () -> assertEquals(a1, ((Response)temp).getAnswerList().get(1)),
+                        () -> assertEquals(a2, ((Response)temp).getAdditionalList().get(0))
+                        );
+            } catch (ValidationException | IOException e) {
+                fail();
+            }
+        }
+
+        /**
+         * Basic response test ignoring certain header fields
+         */
         @Test @DisplayName("Basic response test (ignore header fields)")
         void basicResponseDecode2(){
             byte[] buff = { 0, 0,//id
