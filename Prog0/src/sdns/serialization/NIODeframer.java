@@ -91,10 +91,6 @@ public class NIODeframer {
         //deal with buffer
         this.checkAndSetFrameSize();
 
-
-//        System.out.println("\nPre return Buffer: " + Arrays.toString(this.buff));
-//        System.out.println("Pre return Frame size: " + this.frameSize + " nextInsert: " + this.nextInsert);
-
         //return something
         byte[] toReturn = null;
         //check if have enough bytes to satisfy frame size (frame size will be set if this is valid)
@@ -111,10 +107,6 @@ public class NIODeframer {
             nextInsert -= (frameSize + 2);
             frameSize = -1;
         }
-
-//        System.out.println("Returning: " + Arrays.toString(toReturn));
-//        System.out.println("Buffer: " + Arrays.toString(this.buff));
-//        System.out.println("Frame size: " + this.frameSize + " nextInsert: " + this.nextInsert);
 
         return toReturn;
     }

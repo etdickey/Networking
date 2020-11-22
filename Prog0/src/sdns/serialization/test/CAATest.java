@@ -49,7 +49,6 @@ public class CAATest {
 
             assertEquals(expected, output);
         } catch (ValidationException e) {
-            System.out.println("E: " + e.getMessage());
             fail();
         }
     }
