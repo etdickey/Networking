@@ -14,6 +14,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
+import java.nio.channels.InterruptedByTimeoutException;
 import java.util.concurrent.TimeUnit;
 
 import static sdns.app.utils.LoggingUtils.*;
@@ -101,6 +102,8 @@ public class ServerAIO {
             logWarning("Server Interrupted: " + e.getMessage());
         } catch(IOException e){
             logErrorAndExit("Unable to start: bad port (or socket error): " + e.getMessage());
+        } catch(Exception e){//just in case.....
+            logSevereError("WARN WARN WARN CRITICAL INTERNAL ERROR: " + e.getMessage());
         }
     }
 
@@ -143,9 +146,11 @@ public class ServerAIO {
              */
             @Override
             protected void handleFailedSend() {
+                //possibly need to deserialize more, so spawn off handleWrite
                 //spawn off a read completion handler
+                ByteBuffer toWrite = ByteBuffer.allocate(0).limit(0);
                 readBuff.clear();
-                clntChan.read(readBuff, TIMEOUT, TimeUnit.SECONDS, readBuff, makeReadCompletionHandler(clntChan, deframer, this));
+                clntChan.write(toWrite, toWrite, makeWriteCompletionHandler(clntChan, deframer, this, readBuff));
             }
 
             /**
@@ -175,6 +180,7 @@ public class ServerAIO {
      */
     public static void handleRead(final AsynchronousSocketChannel clntChan, NIODeframer deframer,
                                   ServerProtocol sp, ByteBuffer readBuff, int bytesRead) throws IOException {
+
         if (bytesRead == -1) { // Did the other end close?
             clntChan.close();
         } else if (bytesRead > 0) {
@@ -197,6 +203,7 @@ public class ServerAIO {
                 //once this finishes, either a writer will have spawned off from sendResponse or from handleFailedSend
             }
         }
+
     }
 
     /**
@@ -218,7 +225,7 @@ public class ServerAIO {
             byte[] buffer = deframer.getMessage(new byte[0]);
 
             if(buffer == null){
-                // Back to reading
+                //go back to reading
                 readBuff.clear();
                 clntChan.read(readBuff, TIMEOUT, TimeUnit.SECONDS, readBuff, makeReadCompletionHandler(clntChan, deframer, sp));
             } else {//if readable message, decode/etc, then go back to reading
@@ -266,12 +273,14 @@ public class ServerAIO {
              */
             @Override
             public void failed(Throwable ex, ByteBuffer v) {
-                try {
-                    //if nothing more to read, guaranteed that we already responded to everything we could
-                    clntChan.shutdownInput();
-                    handleRead(clntChan, deframer, sp, null, -1);
-                } catch (IOException e) {
-                    logWarning("Failed to close the connection: " + e.getMessage());
+                if(ex instanceof InterruptedByTimeoutException){
+                    try {
+                        //if nothing more to read, guaranteed that we already responded to everything we could
+                        clntChan.close();
+                        logCommunicationError("Failed to read: timeout: " + ex.getMessage());
+                    } catch (IOException e) {
+                        logWarning("Failed to close the connection: " + e.getMessage());
+                    }
                 }
             }
         };
@@ -313,6 +322,7 @@ public class ServerAIO {
             public void failed(Throwable ex, ByteBuffer buf) {
                 try {//if can't write, close connection
                     clntChan.close();
+                    logCommunicationError("Failed to write: " + ex.getMessage());
                 } catch (IOException e) {
                     logWarning("Failed to close the connection: " + e.getMessage());
                 }

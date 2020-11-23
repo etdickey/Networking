@@ -40,7 +40,7 @@ public abstract class ServerProtocol {
      * @throws NullPointerException if message null
      */
     public void processResponse(byte[] message) throws IOException, NullPointerException {
-        boolean sentResponse = false;
+        boolean sentResponse = true;
         //Parse the message
         try {
             Message m = Message.decode(message);
@@ -67,6 +67,7 @@ public abstract class ServerProtocol {
         } catch (ValidationException e) {
             logParsingError(e.getMessage());
             logNewClient("Number of bytes received from invalid packet of size " + message.length);
+            sentResponse = false;
         }
 
         if(!sentResponse){
