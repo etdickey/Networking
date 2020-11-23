@@ -945,11 +945,6 @@ class ResponseTest {
         try {
             Message temp = Message.decode(buff);
             byte[] arr = temp.encode();
-            for(int i=0; i<Math.min(arr.length, expected.length); i++){
-                if(arr[i] != expected[i]){
-                    System.out.println("Arrays differ at " + i + ": arr[i] = " + arr[i] + " != expected[i] = " + expected[i]);
-                }
-            }
             assertArrayEquals(expected, temp.encode());
         } catch (ValidationException e) {
             fail();

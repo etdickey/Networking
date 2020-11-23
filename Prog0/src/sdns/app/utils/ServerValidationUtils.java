@@ -4,7 +4,6 @@ package sdns.app.utils;
 
 import sdns.app.masterfile.MasterFile;
 import sdns.app.masterfile.MasterFileFactory;
-//import sdns.app.masterfile.MasterFileFactoryMock;
 
 import static sdns.app.utils.LoggingUtils.logErrorAndExit;
 import static sdns.app.utils.ValidationUtils.getPort;
