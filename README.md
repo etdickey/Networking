@@ -22,9 +22,11 @@ The project also includes fuzz testing, load testing, and custom tests for UDP j
 ## Note on connecting to my server (using Dig or another program):
 The program does not implement EDNS, the ADFlag, and will only respond to queries with ANY class requested.  These were part of the program specifications to simplify the semester-long project.
 
-For a detailed report on this, see
+For a detailed report on this, see (link is broken, go to file directly)
 
 [Diging Hosted Server](Prog0/Dig'ing Hosted Server.pdf)
 
 ## Questions and Access to PDF SDNS protocol specifications
 For access to the specifications or questions regarding the code, please contact me through github.
+
+Keywords: java, TCP java, UDP java, sockets java, asynchronous java, synchronous java, junit, junit abstract factories, fuzzer, fuzzing, load testing java, DNS java
